@@ -1,0 +1,13 @@
+[project]
+name = "ms-poc"
+version = "0.1.0"
+description = "Enterprise AI Sales Intelligence POC"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = [
+  "packages/demo_data",
+  "services",
+  "apps/api",
+  "apps/mcp-server",
+]

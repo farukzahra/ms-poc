@@ -44,7 +44,7 @@ ms-poc/
 
 | Service | Port | Health |
 |---------|------|--------|
-| Vue (`apps/web`) | 5173 | app title |
+| Vue (`apps/web`) | 5200 (host) → 5173 (container) | app title |
 | FastAPI (`apps/api`) | 8000 | `GET /health`, `GET /ready` |
 | MCP Server | 8001 | depends on transport |
 | Mock CRM | 8101 | `GET /health` |

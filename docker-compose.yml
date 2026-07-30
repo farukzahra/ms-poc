@@ -1,0 +1,98 @@
+services:
+  mock-crm:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    environment:
+      MOCK_SERVICE: crm
+      PORT: 8101
+    ports:
+      - "8101:8101"
+
+  mock-sales:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    environment:
+      MOCK_SERVICE: sales
+      PORT: 8102
+    ports:
+      - "8102:8102"
+
+  mock-tickets:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    environment:
+      MOCK_SERVICE: tickets
+      PORT: 8103
+    ports:
+      - "8103:8103"
+
+  mock-contracts:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    environment:
+      MOCK_SERVICE: contracts
+      PORT: 8104
+    ports:
+      - "8104:8104"
+
+  mock-products:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    environment:
+      MOCK_SERVICE: products
+      PORT: 8105
+    ports:
+      - "8105:8105"
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: apps/mcp-server/Dockerfile
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8001
+      CRM_API_URL: http://mock-crm:8101
+      SALES_API_URL: http://mock-sales:8102
+      TICKETS_API_URL: http://mock-tickets:8103
+      CONTRACTS_API_URL: http://mock-contracts:8104
+      PRODUCTS_API_URL: http://mock-products:8105
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mock-crm
+      - mock-sales
+      - mock-tickets
+      - mock-contracts
+      - mock-products
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file:
+      - .env
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8001
+      CORS_ORIGIN: http://localhost:5200
+      DATA_DIR: /app/data
+      PROMPTS_DIR: /app/prompts
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mcp-server
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "5200:5173"
+    depends_on:
+      - api

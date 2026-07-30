@@ -159,12 +159,17 @@ When the decision is the user's and cannot be inferred from the PLAN:
 2. One decision per message when possible.
 3. **Database gate does not apply** — no PostgreSQL/Prisma in this project.
 
-### Pending Azure decisions (ask before Phase 2+)
+### Automate before manual steps
 
-- Existing subscription / resource group?
-- Preferred region (PLAN default: `eastus`)?
-- Exact chat + embedding deployment names?
-- Max budget and alert email?
+Before asking the user for **any manual action** (browser click, install, DNS, create token):
+
+1. **Try to execute yourself** — PAT, SSH, API, `gh`, deploy scripts, documented credentials.
+2. **Check known credential locations** — `C:\repo\financeiro\planos\vps-secrets\`, `secrets.local.md`, `.env.example`.
+3. **Azure** — install Azure CLI if missing; run `az login` (or service principal from `vps-secrets/`); use [`scripts/azure-discover.ps1`](scripts/azure-discover.ps1) and [`scripts/azure-fill-env.ps1`](scripts/azure-fill-env.ps1). See [`docs/azure-access.md`](docs/azure-access.md).
+4. **Privileges before asking** — tell the user which **RBAC role/scope** unlocks full agent automation; only ask for manual steps when impossible even with those privileges (first login, OAuth/2FA, billing quota, Entra admin consent).
+5. Escalate only when automation is impossible — state exactly what to create (token type, scope, secret name).
+
+Cursor rule: [`.cursor/rules/automate-before-manual.mdc`](.cursor/rules/automate-before-manual.mdc).
 
 ## Git
 

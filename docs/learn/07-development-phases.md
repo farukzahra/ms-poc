@@ -33,11 +33,11 @@ flowchart LR
 
 **Deliverables:**
 
-- [ ] `docker compose up` starts everything
-- [ ] `POST /api/v1/chat` returns CRM data via MCP
-- [ ] Basic Vue chat
-- [ ] pytest: agent → MCP → mock API
-- [ ] Mock LLM or deterministic response (no Azure yet)
+- [x] `docker compose up` starts everything
+- [x] `POST /api/v1/chat` returns CRM data via MCP
+- [x] Basic Vue chat
+- [x] pytest: agent → MCP → mock API
+- [x] Mock LLM or deterministic response (no Azure yet)
 
 **Recorded decisions:**
 

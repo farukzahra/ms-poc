@@ -1,0 +1,75 @@
+name: Deploy VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install web dependencies
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Playwright E2E
+        working-directory: apps/web
+        run: npx playwright install chromium && npm run test:e2e
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Deploy over SSH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_REF: origin/${{ github.ref_name }}
+          WEB_PORT: ${{ vars.WEB_PORT || '8086' }}
+        run: |
+          set -eu
+          : "${VPS_HOST:?Configure VPS_HOST in repository secrets}"
+          : "${VPS_SSH_KEY:?Configure VPS_SSH_KEY in repository secrets}"
+
+          USER="${VPS_USER:-root}"
+          PORT_SSH="${VPS_PORT:-22}"
+          APP_DIR="${DEPLOY_PATH:-/opt/ms-poc}"
+
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          FETCH_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          ssh -i ~/.ssh/deploy_key \
+            -p "$PORT_SSH" \
+            -o StrictHostKeyChecking=accept-new \
+            "$USER@$VPS_HOST" \
+            "set -eu
+            mkdir -p '$APP_DIR'
+            if [ ! -d '$APP_DIR/.git' ]; then
+              git clone '$FETCH_URL' '$APP_DIR'
+            fi
+            cd '$APP_DIR'
+            git fetch '$FETCH_URL' '+refs/heads/*:refs/remotes/origin/*' --prune
+            git reset --hard '$DEPLOY_REF'
+            chmod +x scripts/deploy-vps.sh
+            GITHUB_TOKEN='$GITHUB_TOKEN' GITHUB_REPO='$GITHUB_REPOSITORY' APP_DIR='$APP_DIR' DEPLOY_REF='$DEPLOY_REF' WEB_PORT='$WEB_PORT' sh '$APP_DIR/scripts/deploy-vps.sh'"

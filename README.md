@@ -10,9 +10,12 @@
 |-------|-------|
 | Specification | ✅ [`docs/PLAN.md`](docs/PLAN.md) |
 | Skills + AGENTS | ✅ |
-| Phase 1 — local vertical slice | 🔲 pending |
-| Azure OpenAI / Search / Blob | 🔲 pending |
-| Container Apps deploy | 🔲 pending |
+| Phase 1 — local vertical slice | ✅ `docker compose up` |
+| Phase 2 — Azure OpenAI | ✅ env-gated (`AzureSalesAgent`) |
+| Phase 3 — Azure AI Search RAG | ✅ env-gated + local fallback |
+| Phase 4 — Blob Storage | ✅ env-gated sync hook |
+| Phase 5 — Container Apps | ✅ Bicep skeleton |
+| Phase 6 — Entra + Insights | ✅ env-gated hooks |
 
 ## Stack
 
@@ -63,18 +66,28 @@ Details: [`docs/stack.md`](docs/stack.md)
            Azure OpenAI (Foundry)
 ```
 
-## Quick start (when Phase 1 exists)
+## Quick start
 
 ```bash
 cp .env.example .env
-docker compose up --build
+python -m uv sync --all-packages   # or: pip install uv && uv sync --all-packages
+docker compose up --build -d
 ```
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://localhost:5173 |
+| Frontend | http://localhost:5200 |
 | API | http://localhost:8000 |
+| MCP | http://localhost:8001/mcp |
 | Health | http://localhost:8000/health |
+
+**Demo prompt:** `Prepare me for my meeting with ACME`
+
+```bash
+make test          # pytest
+make test-e2e      # Playwright (starts Vite on :5200)
+make ingest        # local or Azure RAG ingest
+```
 
 ## Repository layout
 

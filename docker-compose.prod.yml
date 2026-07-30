@@ -1,0 +1,90 @@
+services:
+  mock-crm:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    restart: unless-stopped
+    environment:
+      MOCK_SERVICE: crm
+      PORT: 8101
+
+  mock-sales:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    restart: unless-stopped
+    environment:
+      MOCK_SERVICE: sales
+      PORT: 8102
+
+  mock-tickets:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    restart: unless-stopped
+    environment:
+      MOCK_SERVICE: tickets
+      PORT: 8103
+
+  mock-contracts:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    restart: unless-stopped
+    environment:
+      MOCK_SERVICE: contracts
+      PORT: 8104
+
+  mock-products:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    restart: unless-stopped
+    environment:
+      MOCK_SERVICE: products
+      PORT: 8105
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: apps/mcp-server/Dockerfile
+    restart: unless-stopped
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8001
+      CRM_API_URL: http://mock-crm:8101
+      SALES_API_URL: http://mock-sales:8102
+      TICKETS_API_URL: http://mock-tickets:8103
+      CONTRACTS_API_URL: http://mock-contracts:8104
+      PRODUCTS_API_URL: http://mock-products:8105
+    depends_on:
+      - mock-crm
+      - mock-sales
+      - mock-tickets
+      - mock-contracts
+      - mock-products
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8001
+      CORS_ORIGIN: https://mspoc.faruk.dev.br
+      DATA_DIR: /app/data
+      PROMPTS_DIR: /app/prompts
+    depends_on:
+      - mcp-server
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8086}:80"
+    depends_on:
+      - api

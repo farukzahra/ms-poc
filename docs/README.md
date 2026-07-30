@@ -44,6 +44,7 @@ flowchart LR
 | [security.md](security.md) | Entra ID, RBAC, authorization, secrets |
 | [observability.md](observability.md) | Application Insights, agent telemetry |
 | [cost.md](cost.md) | $50 budget, cost drivers, optimizations |
+| [azure-access.md](azure-access.md) | Agent Azure bootstrap — RBAC, scripts, what to grant |
 | [stack.md](stack.md) | Stack summary, ports, skills |
 
 ## Architecture Decision Records (`adrs/`)

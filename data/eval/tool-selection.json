@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eval-sales-trend",
+    "message": "What is ACME's revenue trend this year?",
+    "expectedTool": "get_customer_sales",
+    "expectRag": false
+  },
+  {
+    "id": "eval-renewal-policy",
+    "message": "When should we start renewal discussions according to policy?",
+    "expectedTool": null,
+    "expectRag": true
+  },
+  {
+    "id": "eval-acme-briefing",
+    "message": "Prepare me for my meeting with ACME",
+    "expectedTools": ["get_customer", "get_customer_sales", "get_customer_tickets"],
+    "expectRag": true
+  }
+]

@@ -1,5 +1,5 @@
 ---
-description: Automate with PAT/SSH/API before asking the user for manual steps
+description: Automate with PAT/SSH/API/Azure CLI before asking the user for manual steps
 alwaysApply: true
 ---
 
@@ -9,7 +9,9 @@ Before instructing the user to do something manually in a browser, external pane
 
 1. **Execute first** — check whether PAT, SSH key, API, script, or documented credentials can resolve it.
 2. **Common sources (Faruk)** — `C:\repo\financeiro\planos\vps-secrets\` (`github-pat.txt`, `deploy_key`), guides in `docs/database-setup.md`, `docs/deploy-vps.md`, project `secrets.local.md`.
-3. **Do not ask permission** for what can already be done with existing keys.
-4. **Escalate to the user** only when automation is impossible (GitHub App OAuth, 2FA, domain registrar, etc.) — and state **exactly** what to create (token, scope, secret name).
+3. **Azure (ms-poc)** — install/use Azure CLI (`pip install azure-cli` or MSI), run `scripts/azure-discover.ps1` and `scripts/azure-fill-env.ps1` after `az login`. Check `docs/azure-access.md`. Optional secrets: `vps-secrets/azure-service-principal.json`, `azure-subscription-id.txt`.
+4. **Privileges first** — before asking the user to create a token, key, or login, state what **role/scope** unlocks agent automation (e.g. Contributor + OpenAI User on a POC resource group). Only escalate when automation is impossible even with those privileges (first `az login`, OAuth/2FA, billing/quota approval, Entra admin consent).
+5. **Do not ask permission** for what can already be done with existing keys or an active `az` session.
+6. **Escalate to the user** only when automation is impossible — and state **exactly** what to create (token, scope, secret name, one browser login).
 
-Never send a manual checklist without first trying API/SSH/PAT.
+Never send a manual checklist without first trying API/SSH/PAT/Azure CLI.
