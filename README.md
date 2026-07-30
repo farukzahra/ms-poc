@@ -28,6 +28,17 @@ POC **Microsoft Azure AI Solution Engineering** — plataforma de inteligência 
 
 Detalhes: [`docs/stack.md`](docs/stack.md)
 
+## Documentação (aprendizado)
+
+**Comece aqui:** [`docs/README.md`](docs/README.md) — trilha com 7 guias + diagramas Mermaid.
+
+| Trilha | Conteúdo |
+|--------|----------|
+| [learn/01-concepts](docs/learn/01-concepts.md) | Agent, RAG, MCP, grounding |
+| [learn/03-request-flow](docs/learn/03-request-flow.md) | Sequência Vue → API → Agent |
+| [architecture.md](docs/architecture.md) | Arquitetura consolidada |
+| [adrs/](docs/adrs/) | Decisões arquiteturais (ADR-001…006) |
+
 ## Arquitetura (alvo)
 
 ```text

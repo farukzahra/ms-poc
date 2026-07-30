@@ -76,6 +76,7 @@ brainstorming
 | Key Vault | `azure-prepare` | Secrets em deploy |
 | Playwright E2E | `playwright-best-practices` | Specs Vue |
 | LLM evaluation | `llm-evaluation` | Tool selection, grounding |
+| Docs + Mermaid | `design-doc-mermaid`, `documentation-and-adrs` | **Sempre** ao documentar fluxos e ADRs |
 | Prisma / Next.js | `prisma-*`, `vercel-react-best-practices` | **Não usados neste projeto** |
 
 ### Skills herdadas (Faruk Base) — uso limitado
@@ -194,12 +195,31 @@ docker compose up --build
 
 Informar URLs efetivas ao usuário.
 
-## Documentação a criar durante implementação
+## Documentação (obrigatório manter)
 
-- `docs/architecture.md`, `docs/security.md`, `docs/rag.md`, `docs/mcp.md`
-- `docs/observability.md`, `docs/cost.md`
-- ADRs: ADR-001 … ADR-006 (ver PLAN §40)
-- `docs/release-history.json` na primeira entrega visível
+**Este projeto é de aprendizado** — toda feature implementada deve atualizar a doc correspondente.
+
+Índice: [`docs/README.md`](docs/README.md)
+
+| Tipo | Local | Quando atualizar |
+|------|-------|------------------|
+| Trilha de aprendizado | `docs/learn/01–07` | Novo fluxo ou conceito |
+| Deep dives | `docs/architecture.md`, `mcp.md`, `rag.md`, … | Mudança de contrato ou arquitetura |
+| ADRs | `docs/adrs/` | Decisão irreversível ou alternativa rejeitada |
+| Diagramas | **Mermaid** inline nos `.md` | Sempre que o fluxo mudar |
+
+**Skills para docs:** `design-doc-mermaid`, `documentation-and-adrs`
+
+**Regras Mermaid:** preferir `flowchart` e `sequenceDiagram`; evitar `block-beta`.
+
+**Checklist pós-implementação:**
+
+1. Atualizar guia `learn/` + diagrama de sequência
+2. Atualizar deep dive se API ou módulo mudou
+3. Novo ADR se decisão arquitetural
+4. Nunca deixar doc contradizer código
+
+Arquivos: `architecture.md`, `security.md`, `rag.md`, `mcp.md`, `observability.md`, `cost.md`, ADR-001…006.
 
 ## Definition of Done
 

@@ -37,6 +37,18 @@
       "skillPath": "skills/caveman-commit/SKILL.md",
       "computedHash": "f028652defd5fdeddcce2994083cb1a7b201ee827bba8e2495546ee159fca3de"
     },
+    "design-doc-mermaid": {
+      "source": "spillwavesolutions/design-doc-mermaid",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "36e44f50fdbfd9e0868c1237ba879395646f42f7db780fe59f1bf4c35947869b"
+    },
+    "documentation-and-adrs": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/documentation-and-adrs/SKILL.md",
+      "computedHash": "7464fd2950b99fb00bbf65cab27653e0a049eef00c98927713ffdfe232a9daa9"
+    },
     "fastapi": {
       "source": "fastapi/fastapi",
       "sourceType": "github",
