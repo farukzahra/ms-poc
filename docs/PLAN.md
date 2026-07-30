@@ -1,3 +1,64 @@
+﻿# Enterprise AI Sales Intelligence Agent — Plano POC
+
+> Especificação completa para a POC Microsoft Azure AI Solution Engineering.
+> Origem: `PLAN.MD.txt`. Última atualização: 2026-07-30.
+
+## Índice
+
+1. [Objetivo](#1-objective)
+2. [Cenário de negócio](#2-business-scenario)
+3. [Valor de negócio](#3-business-value)
+4. [Arquitetura Azure alvo](#4-target-azure-architecture)
+5. [Por que estas tecnologias](#5-why-these-technologies)
+6. [Stack tecnológico](#6-technology-stack)
+7. [Estrutura do repositório](#7-repository-structure)
+8. [Resource Group Azure](#8-azure-resource-group)
+9. [Proteção de budget](#9-azure-budget-protection)
+10. [Azure OpenAI / Foundry](#10-azure-openai--microsoft-foundry)
+11. [Azure AI Search](#11-azure-ai-search)
+12. [Ingestão de documentos](#12-document-ingestion)
+13. [Chunking](#13-chunking)
+14. [RAG](#14-rag)
+15. [Citações](#15-citations)
+16. [APIs enterprise](#16-enterprise-apis)
+17. [MCP Server](#17-mcp-server)
+18. [Agent](#18-agent)
+19. [System prompt](#19-agent-system-prompt)
+20. [Conversa exemplo](#20-example-conversation)
+21. [Fato vs recomendação](#21-fact-vs-recommendation)
+22. [Segurança](#22-security)
+23. [Secrets](#23-secrets)
+24. [Observabilidade](#24-observability)
+25. [AI Observability](#25-ai-observability)
+26. [Responsible AI](#26-responsible-ai)
+27. [Frontend](#27-frontend)
+28. [API](#28-api)
+29. [Health](#29-health)
+30. [Docker](#30-docker)
+31. [Azure Container Apps](#31-azure-container-apps)
+32. [Infrastructure as Code](#32-infrastructure-as-code)
+33. [Azure CLI](#33-azure-cli)
+34. [Configuração](#34-configuration)
+35. [Estratégia de custo](#35-cost-strategy)
+36. [Estratégia de desenvolvimento (fases)](#36-development-strategy)
+37. [Dataset demo](#37-demo-dataset)
+38. [Clientes demo](#38-demo-customers)
+39. [Cenários demo](#39-demo-scenarios)
+40. [ADRs](#40-architecture-decision-records)
+41. [Testes](#41-testing)
+42. [Avaliação](#42-evaluation)
+43. [Performance](#43-performance)
+44. [Arquitetura produção](#44-production-architecture)
+45. [Evolução de segurança](#45-security-evolution)
+46. [Evolução da arquitetura AI](#46-ai-architecture-evolution)
+47. [Métricas de negócio](#47-business-metrics)
+48. [Demo final](#48-final-demo)
+49. [Talking points entrevista](#49-interview-talking-points)
+50. [Princípio arquitetural](#50-important-architectural-principle)
+51. [Definition of Done](#51-definition-of-done)
+52. [Primeira task de implementação](#52-first-implementation-task)
+
+---
 # Enterprise AI Sales Intelligence Agent
 
 ## Microsoft Azure AI Solution Engineering POC
@@ -29,7 +90,7 @@ The system must be designed around a realistic enterprise scenario rather than b
 
 ---
 
-# 2. Business Scenario
+## 2. Business Scenario
 
 Large enterprise sales organizations usually have customer information distributed across multiple systems.
 
@@ -66,7 +127,7 @@ and produce an executive briefing.
 
 ---
 
-# 3. Business Value
+## 3. Business Value
 
 The solution should demonstrate measurable business value.
 
@@ -91,73 +152,73 @@ It should be presented as:
 
 ---
 
-# 4. Target Azure Architecture
+## 4. Target Azure Architecture
 
 The target architecture is:
 
 ```text
                          SALES USER
-                              │
-                              ▼
-                     ┌─────────────────┐
-                     │    Vue 3 UI     │
-                     └────────┬────────┘
-                              │
-                              ▼
-                  ┌───────────────────────┐
-                  │   Azure Container     │
-                  │       Apps            │
-                  │                       │
-                  │  Python + FastAPI     │
-                  └───────────┬───────────┘
-                              │
-                              ▼
-                  ┌───────────────────────┐
-                  │   Semantic Kernel     │
-                  │      AI Agent         │
-                  └───────────┬───────────┘
-                              │
-                 ┌────────────┴────────────┐
-                 │                         │
-                 ▼                         ▼
-        ┌─────────────────┐       ┌─────────────────┐
-        │       RAG       │       │   MCP Client    │
-        └────────┬────────┘       └────────┬────────┘
-                 │                         │
-                 ▼                         ▼
-        ┌─────────────────┐       ┌─────────────────┐
-        │ Azure AI Search │       │   MCP Server    │
-        └────────┬────────┘       └────────┬────────┘
-                 │                         │
-                 │                ┌────────┼─────────┐
-                 │                ▼        ▼         ▼
-                 │              CRM      Sales    Tickets
-                 │              API       API       API
-                 │
-                 ▼
-        ┌─────────────────┐
-        │ Azure Blob      │
-        │ Storage         │
-        └─────────────────┘
+                              â”‚
+                              â–¼
+                     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                     â”‚    Vue 3 UI     â”‚
+                     â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+                              â–¼
+                  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                  â”‚   Azure Container     â”‚
+                  â”‚       Apps            â”‚
+                  â”‚                       â”‚
+                  â”‚  Python + FastAPI     â”‚
+                  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+                              â–¼
+                  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                  â”‚   Semantic Kernel     â”‚
+                  â”‚      AI Agent         â”‚
+                  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                 â”‚                         â”‚
+                 â–¼                         â–¼
+        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+        â”‚       RAG       â”‚       â”‚   MCP Client    â”‚
+        â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜       â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                 â”‚                         â”‚
+                 â–¼                         â–¼
+        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+        â”‚ Azure AI Search â”‚       â”‚   MCP Server    â”‚
+        â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜       â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                 â”‚                         â”‚
+                 â”‚                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                 â”‚                â–¼        â–¼         â–¼
+                 â”‚              CRM      Sales    Tickets
+                 â”‚              API       API       API
+                 â”‚
+                 â–¼
+        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+        â”‚ Azure Blob      â”‚
+        â”‚ Storage         â”‚
+        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │ Microsoft Foundry │
-                    │ / Azure OpenAI    │
-                    └───────────────────┘
+                              â”‚
+                              â–¼
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚ Microsoft Foundry â”‚
+                    â”‚ / Azure OpenAI    â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │ Application       │
-                    │ Insights          │
-                    └───────────────────┘
+                              â”‚
+                              â–¼
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚ Application       â”‚
+                    â”‚ Insights          â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
-# 5. Why These Technologies
+## 5. Why These Technologies
 
 ## Microsoft Foundry / Azure OpenAI
 
@@ -259,9 +320,9 @@ The architecture should demonstrate:
 
 ```text
 Existing REST APIs
-       ↓
+       â†“
     MCP Server
-       ↓
+       â†“
     AI Agent
 ```
 
@@ -269,7 +330,7 @@ The existing enterprise APIs must not be rewritten specifically for AI.
 
 ---
 
-# 6. Technology Stack
+## 6. Technology Stack
 
 ## Backend
 
@@ -315,66 +376,66 @@ Git
 
 ---
 
-# 7. Repository Structure
+## 7. Repository Structure
 
 Create a monorepo:
 
 ```text
 enterprise-ai-sales/
-│
-├── apps/
-│   ├── api/
-│   │   ├── app/
-│   │   │   ├── api/
-│   │   │   ├── agent/
-│   │   │   ├── rag/
-│   │   │   ├── mcp/
-│   │   │   ├── domain/
-│   │   │   ├── infrastructure/
-│   │   │   └── main.py
-│   │   └── tests/
-│   │
-│   ├── mcp-server/
-│   │   ├── server/
-│   │   └── tests/
-│   │
-│   └── web/
-│       ├── src/
-│       └── tests/
-│
-├── services/
-│   ├── mock-crm/
-│   ├── mock-sales/
-│   └── mock-tickets/
-│
-├── data/
-│   ├── customers/
-│   ├── products/
-│   ├── contracts/
-│   └── policies/
-│
-├── infrastructure/
-│   └── azure/
-│       ├── bicep/
-│       └── scripts/
-│
-├── docs/
-│   ├── architecture.md
-│   ├── security.md
-│   ├── rag.md
-│   ├── mcp.md
-│   ├── observability.md
-│   └── cost.md
-│
-├── docker-compose.yml
-├── Makefile
-├── .env.example
-└── README.md
+â”‚
+â”œâ”€â”€ apps/
+â”‚   â”œâ”€â”€ api/
+â”‚   â”‚   â”œâ”€â”€ app/
+â”‚   â”‚   â”‚   â”œâ”€â”€ api/
+â”‚   â”‚   â”‚   â”œâ”€â”€ agent/
+â”‚   â”‚   â”‚   â”œâ”€â”€ rag/
+â”‚   â”‚   â”‚   â”œâ”€â”€ mcp/
+â”‚   â”‚   â”‚   â”œâ”€â”€ domain/
+â”‚   â”‚   â”‚   â”œâ”€â”€ infrastructure/
+â”‚   â”‚   â”‚   â””â”€â”€ main.py
+â”‚   â”‚   â””â”€â”€ tests/
+â”‚   â”‚
+â”‚   â”œâ”€â”€ mcp-server/
+â”‚   â”‚   â”œâ”€â”€ server/
+â”‚   â”‚   â””â”€â”€ tests/
+â”‚   â”‚
+â”‚   â””â”€â”€ web/
+â”‚       â”œâ”€â”€ src/
+â”‚       â””â”€â”€ tests/
+â”‚
+â”œâ”€â”€ services/
+â”‚   â”œâ”€â”€ mock-crm/
+â”‚   â”œâ”€â”€ mock-sales/
+â”‚   â””â”€â”€ mock-tickets/
+â”‚
+â”œâ”€â”€ data/
+â”‚   â”œâ”€â”€ customers/
+â”‚   â”œâ”€â”€ products/
+â”‚   â”œâ”€â”€ contracts/
+â”‚   â””â”€â”€ policies/
+â”‚
+â”œâ”€â”€ infrastructure/
+â”‚   â””â”€â”€ azure/
+â”‚       â”œâ”€â”€ bicep/
+â”‚       â””â”€â”€ scripts/
+â”‚
+â”œâ”€â”€ docs/
+â”‚   â”œâ”€â”€ architecture.md
+â”‚   â”œâ”€â”€ security.md
+â”‚   â”œâ”€â”€ rag.md
+â”‚   â”œâ”€â”€ mcp.md
+â”‚   â”œâ”€â”€ observability.md
+â”‚   â””â”€â”€ cost.md
+â”‚
+â”œâ”€â”€ docker-compose.yml
+â”œâ”€â”€ Makefile
+â”œâ”€â”€ .env.example
+â””â”€â”€ README.md
 ```
 
 ---
 
-# 8. Azure Resource Group
+## 8. Azure Resource Group
 
 Use one dedicated resource group.
 
@@ -392,7 +453,7 @@ Do not randomly create resources in multiple regions.
 
 ---
 
-# 9. Azure Budget Protection
+## 9. Azure Budget Protection
 
 Cost control is mandatory.
 
@@ -419,7 +480,7 @@ The objective is to demonstrate the architecture while keeping consumption low.
 
 ---
 
-# 10. Azure OpenAI / Microsoft Foundry
+## 10. Azure OpenAI / Microsoft Foundry
 
 Create the required AI resource using the current Azure/Microsoft Foundry workflow.
 
@@ -452,7 +513,7 @@ Do not commit credentials.
 
 ---
 
-# 11. Azure AI Search
+## 11. Azure AI Search
 
 Create one Azure AI Search service.
 
@@ -482,7 +543,7 @@ Do not hardcode embedding dimensions without verifying the selected model.
 
 ---
 
-# 12. Document Ingestion
+## 12. Document Ingestion
 
 Implement an ingestion command:
 
@@ -494,23 +555,23 @@ The pipeline:
 
 ```text
 Blob Storage
-      │
-      ▼
+      â”‚
+      â–¼
 Document Loader
-      │
-      ▼
+      â”‚
+      â–¼
 Text Extraction
-      │
-      ▼
+      â”‚
+      â–¼
 Chunking
-      │
-      ▼
+      â”‚
+      â–¼
 Metadata Extraction
-      │
-      ▼
+      â”‚
+      â–¼
 Embedding Generation
-      │
-      ▼
+      â”‚
+      â–¼
 Azure AI Search
 ```
 
@@ -527,7 +588,7 @@ For the initial POC, documents may be simple deterministic sample files.
 
 ---
 
-# 13. Chunking
+## 13. Chunking
 
 Implement configurable chunking.
 
@@ -544,7 +605,7 @@ The README should explain why chunk size and overlap affect retrieval quality.
 
 ---
 
-# 14. RAG
+## 14. RAG
 
 The RAG service should expose a clean interface:
 
@@ -562,15 +623,15 @@ The implementation should perform:
 
 ```text
 Query
- ↓
+ â†“
 Embedding
- ↓
+ â†“
 Hybrid Search
- ↓
+ â†“
 Metadata filtering
- ↓
+ â†“
 Ranking
- ↓
+ â†“
 Top K documents
 ```
 
@@ -584,7 +645,7 @@ should be used as a filter whenever the question concerns ACME.
 
 ---
 
-# 15. Citations
+## 15. Citations
 
 Every RAG answer should include citations.
 
@@ -605,7 +666,7 @@ The agent must never claim that information came from a source that was not actu
 
 ---
 
-# 16. Enterprise APIs
+## 16. Enterprise APIs
 
 Create mock REST services representing existing enterprise systems.
 
@@ -644,7 +705,7 @@ These services should contain deterministic sample data.
 
 ---
 
-# 17. MCP Server
+## 17. MCP Server
 
 The MCP server should expose the enterprise APIs as tools.
 
@@ -667,20 +728,20 @@ Architecture:
 
 ```text
 AI Agent
-   │
-   ▼
+   â”‚
+   â–¼
 MCP Client
-   │
-   ▼
+   â”‚
+   â–¼
 MCP Server
-   │
-   ▼
+   â”‚
+   â–¼
 REST APIs
 ```
 
 ---
 
-# 18. Agent
+## 18. Agent
 
 Implement a Sales Intelligence Agent using Semantic Kernel.
 
@@ -706,7 +767,7 @@ How much did ACME spend last year?
 Expected:
 
 ```text
-MCP → Sales API
+MCP â†’ Sales API
 ```
 
 Do not use RAG.
@@ -722,7 +783,7 @@ What is our enterprise AI deployment policy?
 Expected:
 
 ```text
-RAG → Azure AI Search
+RAG â†’ Azure AI Search
 ```
 
 Do not call CRM APIs.
@@ -752,7 +813,7 @@ The agent should combine:
 
 ---
 
-# 19. Agent System Prompt
+## 19. Agent System Prompt
 
 Create a system prompt that establishes:
 
@@ -784,7 +845,7 @@ The prompt should be stored outside application code.
 
 ---
 
-# 20. Example Conversation
+## 20. Example Conversation
 
 User:
 
@@ -841,7 +902,7 @@ Sources:
 
 ---
 
-# 21. Fact vs Recommendation
+## 21. Fact vs Recommendation
 
 The application must visually distinguish:
 
@@ -873,7 +934,7 @@ Recommendations must be clearly identified as AI-generated.
 
 ---
 
-# 22. Security
+## 22. Security
 
 Implement authentication using Microsoft Entra ID if practical for the deployed version.
 
@@ -901,7 +962,7 @@ The backend must derive authorization from the authenticated identity.
 
 ---
 
-# 23. Secrets
+## 23. Secrets
 
 Never store:
 
@@ -930,7 +991,7 @@ Environment variables should contain only references/configuration where possibl
 
 ---
 
-# 24. Observability
+## 24. Observability
 
 Integrate Application Insights.
 
@@ -959,18 +1020,18 @@ The system should provide enough telemetry to answer:
 
 ---
 
-# 25. AI Observability
+## 25. AI Observability
 
 Track each agent execution:
 
 ```text
 Agent execution
-    │
-    ├── LLM call
-    ├── MCP call
-    ├── RAG search
-    ├── LLM call
-    └── Final response
+    â”‚
+    â”œâ”€â”€ LLM call
+    â”œâ”€â”€ MCP call
+    â”œâ”€â”€ RAG search
+    â”œâ”€â”€ LLM call
+    â””â”€â”€ Final response
 ```
 
 Example telemetry:
@@ -1001,7 +1062,7 @@ Tokens:
 
 ---
 
-# 26. Responsible AI
+## 26. Responsible AI
 
 The system should implement basic responsible AI controls.
 
@@ -1026,7 +1087,7 @@ the cause of the decline.
 
 ---
 
-# 27. Frontend
+## 27. Frontend
 
 Build a simple Vue 3 interface.
 
@@ -1043,31 +1104,31 @@ Required features:
 Example:
 
 ```text
-┌──────────────────────────────────────────────┐
-│ Enterprise AI Sales Intelligence             │
-├──────────────────────────────────────────────┤
-│                                              │
-│ User                                         │
-│ Prepare me for ACME.                         │
-│                                              │
-│ AI                                             │
-│                                              │
-│ ACME Executive Briefing                      │
-│                                              │
-│ FACT                                         │
-│ Revenue decreased 12%.                       │
-│                                              │
-│ AI RECOMMENDATION                            │
-│ Discuss adoption before expansion.           │
-│                                              │
-│ Sources                                      │
-│ • ACME Contract                              │
-│ • Sales History                              │
-│ • Support Tickets                            │
-│                                              │
-├──────────────────────────────────────────────┤
-│ Ask something...                       [Send] │
-└──────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Enterprise AI Sales Intelligence             â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                              â”‚
+â”‚ User                                         â”‚
+â”‚ Prepare me for ACME.                         â”‚
+â”‚                                              â”‚
+â”‚ AI                                             â”‚
+â”‚                                              â”‚
+â”‚ ACME Executive Briefing                      â”‚
+â”‚                                              â”‚
+â”‚ FACT                                         â”‚
+â”‚ Revenue decreased 12%.                       â”‚
+â”‚                                              â”‚
+â”‚ AI RECOMMENDATION                            â”‚
+â”‚ Discuss adoption before expansion.           â”‚
+â”‚                                              â”‚
+â”‚ Sources                                      â”‚
+â”‚ â€¢ ACME Contract                              â”‚
+â”‚ â€¢ Sales History                              â”‚
+â”‚ â€¢ Support Tickets                            â”‚
+â”‚                                              â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Ask something...                       [Send] â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 Do not spend significant time on visual design.
@@ -1076,7 +1137,7 @@ Architecture and functionality are more important.
 
 ---
 
-# 28. API
+## 28. API
 
 Expose:
 
@@ -1115,7 +1176,7 @@ Response:
 
 ---
 
-# 29. Health
+## 29. Health
 
 Implement:
 
@@ -1130,7 +1191,7 @@ Do not expose secrets or connection strings.
 
 ---
 
-# 30. Docker
+## 30. Docker
 
 The complete local development environment should run with:
 
@@ -1153,7 +1214,7 @@ Azure services remain external.
 
 ---
 
-# 31. Azure Container Apps
+## 31. Azure Container Apps
 
 Deploy the API to Azure Container Apps.
 
@@ -1169,7 +1230,7 @@ The frontend may be deployed separately.
 
 ---
 
-# 32. Infrastructure as Code
+## 32. Infrastructure as Code
 
 Use Bicep.
 
@@ -1196,7 +1257,7 @@ Do not create production resources manually if they can be represented in Bicep.
 
 ---
 
-# 33. Azure CLI
+## 33. Azure CLI
 
 Document commands for:
 
@@ -1220,7 +1281,7 @@ where appropriate.
 
 ---
 
-# 34. Configuration
+## 34. Configuration
 
 Create:
 
@@ -1252,7 +1313,7 @@ Never commit `.env`.
 
 ---
 
-# 35. Cost Strategy
+## 35. Cost Strategy
 
 The POC is being developed using Azure credits.
 
@@ -1281,7 +1342,7 @@ explaining which resources consume money and how to minimize them.
 
 ---
 
-# 36. Development Strategy
+## 36. Development Strategy
 
 Do NOT create all Azure resources immediately.
 
@@ -1357,7 +1418,7 @@ Use Blob as the document source.
 Deploy:
 
 ```text
-FastAPI → Azure Container Apps
+FastAPI â†’ Azure Container Apps
 ```
 
 ---
@@ -1374,7 +1435,7 @@ Key Vault
 
 ---
 
-# 37. Demo Dataset
+## 37. Demo Dataset
 
 Create a fictional enterprise called:
 
@@ -1400,7 +1461,7 @@ Do not use real customer data.
 
 ---
 
-# 38. Demo Customers
+## 38. Demo Customers
 
 Create:
 
@@ -1444,7 +1505,7 @@ Enterprise AI Automation
 
 ---
 
-# 39. Demo Scenarios
+## 39. Demo Scenarios
 
 ## Scenario 1
 
@@ -1516,19 +1577,19 @@ MCP + RAG + Agent reasoning
 
 ---
 
-# 40. Architecture Decision Records
+## 40. Architecture Decision Records
 
 Create ADRs for important decisions.
 
 At minimum:
 
 ```text
-ADR-001 — Why Semantic Kernel
-ADR-002 — Why MCP
-ADR-003 — Why Azure AI Search
-ADR-004 — RAG vs structured API access
-ADR-005 — Local development vs Azure
-ADR-006 — Agent security model
+ADR-001 â€” Why Semantic Kernel
+ADR-002 â€” Why MCP
+ADR-003 â€” Why Azure AI Search
+ADR-004 â€” RAG vs structured API access
+ADR-005 â€” Local development vs Azure
+ADR-006 â€” Agent security model
 ```
 
 Each ADR should explain:
@@ -1545,7 +1606,7 @@ This is important for the Solution Engineer interview.
 
 ---
 
-# 41. Testing
+## 41. Testing
 
 Implement:
 
@@ -1562,13 +1623,13 @@ Implement:
 Test:
 
 ```text
-Agent → MCP → REST API
+Agent â†’ MCP â†’ REST API
 ```
 
 and:
 
 ```text
-Agent → RAG → Azure AI Search
+Agent â†’ RAG â†’ Azure AI Search
 ```
 
 ## End-to-end test
@@ -1577,19 +1638,19 @@ Test:
 
 ```text
 User
- ↓
+ â†“
 API
- ↓
+ â†“
 Agent
- ↓
+ â†“
 MCP + RAG
- ↓
+ â†“
 Response
 ```
 
 ---
 
-# 42. Evaluation
+## 42. Evaluation
 
 Create a small evaluation dataset.
 
@@ -1623,7 +1684,7 @@ The goal is to demonstrate that an AI application should be **evaluated**, not m
 
 ---
 
-# 43. Performance
+## 43. Performance
 
 Measure:
 
@@ -1647,7 +1708,7 @@ Document possible optimization strategies:
 
 ---
 
-# 44. Production Architecture
+## 44. Production Architecture
 
 The final README must contain a section:
 
@@ -1688,7 +1749,7 @@ Cost management
 
 ---
 
-# 45. Security Evolution
+## 45. Security Evolution
 
 Explain how production would use:
 
@@ -1709,19 +1770,19 @@ The objective is to demonstrate that the architecture can evolve securely.
 
 ---
 
-# 46. AI Architecture Evolution
+## 46. AI Architecture Evolution
 
 Explain how the single agent could evolve into:
 
 ```text
                    Supervisor Agent
-                          │
-             ┌────────────┼────────────┐
-             ▼            ▼            ▼
+                          â”‚
+             â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+             â–¼            â–¼            â–¼
         Sales Agent   Support Agent  Product Agent
-             │            │            │
-             └────────────┼────────────┘
-                          ▼
+             â”‚            â”‚            â”‚
+             â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                          â–¼
                     Enterprise Data
 ```
 
@@ -1729,7 +1790,7 @@ This should be presented as a future architecture rather than unnecessarily impl
 
 ---
 
-# 47. Business Metrics
+## 47. Business Metrics
 
 Define hypothetical metrics that could be measured in a real deployment:
 
@@ -1756,7 +1817,7 @@ This is a target for the POC demonstration, not a measured production result.
 
 ---
 
-# 48. Final Demo
+## 48. Final Demo
 
 The final demo should take approximately 10 minutes.
 
@@ -1834,7 +1895,7 @@ Explain:
 
 ---
 
-# 49. Interview Talking Points
+## 49. Interview Talking Points
 
 The developer should be able to explain:
 
@@ -1868,15 +1929,15 @@ Because REST APIs serve traditional applications while MCP provides an AI-orient
 
 ---
 
-# 50. Important Architectural Principle
+## 50. Important Architectural Principle
 
 The system must NOT become:
 
 ```text
 User
- ↓
+ â†“
 LLM
- ↓
+ â†“
 Everything
 ```
 
@@ -1884,15 +1945,15 @@ Instead:
 
 ```text
                      USER
-                       │
-                       ▼
+                       â”‚
+                       â–¼
                     AGENT
                    /     \
                   /       \
-                 ▼         ▼
+                 â–¼         â–¼
               RAG          MCP
-               │            │
-               ▼            ▼
+               â”‚            â”‚
+               â–¼            â–¼
           Knowledge     Enterprise
              Base          APIs
 ```
@@ -1901,7 +1962,7 @@ The LLM should orchestrate access to enterprise capabilities rather than becomin
 
 ---
 
-# 51. Definition of Done
+## 51. Definition of Done
 
 The project is complete when:
 
@@ -1930,7 +1991,7 @@ The project is complete when:
 
 ---
 
-# 52. First Implementation Task
+## 52. First Implementation Task
 
 Do not implement the entire system at once.
 
@@ -1958,17 +2019,17 @@ Create one working vertical slice:
 
 ```text
 User
- ↓
+ â†“
 Vue
- ↓
+ â†“
 FastAPI
- ↓
+ â†“
 Semantic Kernel Agent
- ↓
+ â†“
 MCP
- ↓
+ â†“
 CRM API
- ↓
+ â†“
 Answer
 ```
 
@@ -1978,13 +2039,13 @@ Then integrate:
 
 ```text
 Azure OpenAI
- ↓
+ â†“
 Azure AI Search
- ↓
+ â†“
 Blob Storage
- ↓
+ â†“
 Container Apps
- ↓
+ â†“
 Application Insights
 ```
 
@@ -1993,3 +2054,4 @@ At every stage, keep the application executable.
 Do not generate placeholder implementations for completed components.
 
 Do not claim Azure functionality works until it has been tested against the real Azure service.
+

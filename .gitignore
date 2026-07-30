@@ -1,0 +1,122 @@
+# --- Secrets & credentials (never commit) ---
+.env
+.env.*
+!.env.example
+.env.local
+.env.*.local
+secrets.local.md
+**/secrets/
+**/*secret*
+**/*credentials*
+**/*credential*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.ppk
+.pat
+github-pat.txt
+**/github-pat.txt
+**/vps-secrets/
+
+# Azure / cloud keys
+.azure/
+*.publishsettings
+service-principal*.json
+**/azure-credentials*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.uv/
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Node / Vue ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.pnpm-store/
+.yarn/
+.pnp.*
+coverage/
+.nuxt/
+.output/
+.vite/
+
+# --- Logs & temp ---
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.sublime-*
+.cursor/projects/
+
+# --- Docker ---
+docker-compose.override.yml
+.docker/
+
+# --- Test / E2E ---
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# --- Build artifacts ---
+*.zip
+*.tar.gz
+*.whl
+
+# --- Local data (runtime, not sample fixtures) ---
+data/uploads/
+data/cache/
+*.sqlite
+*.sqlite3
+*.db
+
+# --- Terraform / Bicep state (if added later) ---
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
