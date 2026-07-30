@@ -1,8 +1,8 @@
 # 02 — Architecture Overview
 
-Visão estrutural do monorepo, camadas e deployment.
+Structural view of the monorepo, layers, and deployment.
 
-## Diagrama de alto nível
+## High-level diagram
 
 ```mermaid
 flowchart TB
@@ -97,18 +97,18 @@ flowchart TD
     class Apps,Svc,Data,Infra,Docs folder
 ```
 
-## Camadas e responsabilidades
+## Layers and responsibilities
 
-| Camada | Pasta | Responsabilidade | Não deve |
-|--------|-------|------------------|----------|
-| **HTTP** | `apps/api/app/api/` | Validar request, auth, serializar response | Conter lógica do agent |
-| **Agent** | `apps/api/app/agent/` | Intent, tool selection, synthesis | Chamar HTTP direto das mocks |
-| **RAG** | `apps/api/app/rag/` | Embed, search, filter, rank | Inventar conteúdo |
-| **MCP client** | `apps/api/app/mcp/` | Conectar ao MCP server | Duplicar tools |
-| **MCP server** | `apps/mcp-server/` | Expor tools, chamar REST | Regra de negócio duplicada |
-| **Domain** | `apps/api/app/domain/` | Tipos, DTOs, enums | Dependências Azure |
-| **Infrastructure** | `apps/api/app/infrastructure/` | Clients Azure, telemetry | Lógica de negócio |
-| **UI** | `apps/web/src/` | Chat, sources, loading | Autorizar por customer_id só |
+| Layer | Folder | Responsibility | Must not |
+|-------|--------|----------------|----------|
+| **HTTP** | `apps/api/app/api/` | Validate request, auth, serialize response | Contain agent logic |
+| **Agent** | `apps/api/app/agent/` | Intent, tool selection, synthesis | Call mock HTTP directly |
+| **RAG** | `apps/api/app/rag/` | Embed, search, filter, rank | Invent content |
+| **MCP client** | `apps/api/app/mcp/` | Connect to MCP server | Duplicate tools |
+| **MCP server** | `apps/mcp-server/` | Expose tools, call REST | Duplicate business rules |
+| **Domain** | `apps/api/app/domain/` | Types, DTOs, enums | Azure dependencies |
+| **Infrastructure** | `apps/api/app/infrastructure/` | Azure clients, telemetry | Business logic |
+| **UI** | `apps/web/src/` | Chat, sources, loading | Authorize by customer_id alone |
 
 ## Deployment — local vs Azure
 
@@ -139,18 +139,18 @@ flowchart LR
     class Cloud cloud
 ```
 
-## Portas padrão (local)
+## Default local ports
 
-| Serviço | Porta | Endpoint de saúde |
-|---------|-------|---------------------|
-| Vue | 5173 | página inicial |
+| Service | Port | Health endpoint |
+|---------|------|-----------------|
+| Vue | 5173 | home page |
 | FastAPI | 8000 | `GET /health`, `GET /ready` |
-| MCP Server | 8001 | conforme transport |
+| MCP Server | 8001 | per transport |
 | Mock CRM | 8101 | `GET /health` |
 | Mock Sales | 8102 | `GET /health` |
 | Mock Tickets | 8103 | `GET /health` |
 
-## Princípio: separação LLM ↔ Retrieval
+## Principle: LLM ↔ retrieval separation
 
 ```mermaid
 flowchart TB
@@ -200,6 +200,6 @@ erDiagram
     }
 ```
 
-## Próximo passo
+## Next step
 
 → [03 — Request Flow](03-request-flow.md)

@@ -1,0 +1,25 @@
+---
+description: All project artifacts must be written in English
+alwaysApply: true
+---
+
+# English only
+
+This repository (**ms-poc**) is **English-only**.
+
+## Applies to
+
+- All documentation (`docs/`, `README.md`, `AGENTS.md`, ADRs, comments in markdown)
+- UI copy, labels, error messages, demo data narratives
+- Code comments (unless quoting external APIs)
+- Commit messages (Conventional Commits, English — already required)
+- Agent responses about this project in chat may stay in the user's language, but **files committed to the repo must be English**
+
+## Does not apply to
+
+- User chat language preference outside the repo
+- Third-party skill files under `.agents/skills/` (upstream English)
+
+## When editing
+
+If you find Portuguese (or any non-English) in repo docs or UI strings, translate to English in the same change.

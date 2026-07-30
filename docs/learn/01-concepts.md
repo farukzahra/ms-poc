@@ -1,14 +1,14 @@
 # 01 — Core Concepts
 
-Antes de escrever código, entenda **o que** estamos construindo e **por que** não é um chatbot comum.
+Before writing code, understand **what** we are building and **why** it is not a ordinary chatbot.
 
-## O problema de negócio
+## Business problem
 
-Vendedores enterprise precisam de informação espalhada em vários sistemas:
+Enterprise sales reps need information scattered across many systems:
 
 ```mermaid
 flowchart LR
-    subgraph Sources["📂 Fontes de informação"]
+    subgraph Sources["📂 Information sources"]
         CRM[(CRM)]
         Sales[(Sales)]
         Tickets[(Support)]
@@ -22,18 +22,18 @@ flowchart LR
     class Rep pain
 ```
 
-**Objetivo da POC:** reduzir essa preparação para **menos de 5 minutos** com um agente que sabe *onde buscar* cada tipo de informação.
+**POC goal:** reduce meeting prep to **under 5 minutes** with an agent that knows *where to fetch* each type of information.
 
-## Chatbot vs Enterprise Agent
+## Chatbot vs enterprise agent
 
-| | Chatbot genérico | Sales Intelligence Agent |
-|---|------------------|--------------------------|
-| Fonte de dados | Só o modelo (memória paramétrica) | MCP (APIs) + RAG (documentos) |
-| Dados transacionais | Inventa ou desatualiza | MCP → REST APIs reais |
-| Políticas internas | Alucina | RAG → Azure AI Search |
-| Decisão de ferramenta | Fixa ou inexistente | Agent decide MCP / RAG / both |
-| Citações | Opcionais | Obrigatórias em respostas RAG |
-| Fato vs opinião | Misturado | UI separa FACT vs AI RECOMMENDATION |
+| | Generic chatbot | Sales Intelligence Agent |
+|---|-----------------|--------------------------|
+| Data source | Model only (parametric memory) | MCP (APIs) + RAG (documents) |
+| Transactional data | Invents or stale | MCP → real REST APIs |
+| Internal policies | Hallucinates | RAG → Azure AI Search |
+| Tool selection | Fixed or none | Agent picks MCP / RAG / both |
+| Citations | Optional | Required on RAG answers |
+| Fact vs opinion | Mixed | UI separates FACT vs AI RECOMMENDATION |
 
 ```mermaid
 flowchart TB
@@ -41,7 +41,7 @@ flowchart TB
         U1[User] --> LLM1[LLM = everything]
     end
 
-    subgraph Good["✅ Nossa arquitetura"]
+    subgraph Good["✅ Our architecture"]
         U2[User] --> AG[🧠 Agent]
         AG --> RAG[📚 RAG]
         AG --> MCP[🔌 MCP]
@@ -57,11 +57,11 @@ flowchart TB
     class Good good
 ```
 
-> **Regra de ouro:** o LLM **orquestra**; não é a base de conhecimento da empresa.
+> **Golden rule:** the LLM **orchestrates**; it is not the company's knowledge base.
 
 ## RAG — Retrieval-Augmented Generation
 
-**RAG** = buscar documentos relevantes *antes* de gerar a resposta.
+**RAG** = retrieve relevant documents *before* generating the answer.
 
 ```mermaid
 sequenceDiagram
@@ -77,20 +77,20 @@ sequenceDiagram
     L-->>Q: grounded answer + citations
 ```
 
-**Quando usar RAG:**
+**When to use RAG:**
 
-- Políticas internas
-- Documentação de produto
-- Contratos em PDF/Markdown
-- Qualquer conhecimento que **muda** e **não** está em API estruturada
+- Internal policies
+- Product documentation
+- Contracts (PDF/Markdown)
+- Any knowledge that **changes** and is **not** in a structured API
 
-**Quando NÃO usar RAG:**
+**When NOT to use RAG:**
 
-- "Quanto ACME gastou ano passado?" → dado transacional → **MCP**
+- "How much did ACME spend last year?" → transactional → **MCP**
 
 ## MCP — Model Context Protocol
 
-**MCP** expõe capacidades enterprise como **tools** que o agent invoca.
+**MCP** exposes enterprise capabilities as **tools** the agent invokes.
 
 ```mermaid
 flowchart LR
@@ -103,39 +103,39 @@ flowchart LR
     class MCP tool
 ```
 
-**Tools planejadas:**
+**Planned tools:**
 
-| Tool | Fonte | Exemplo de uso |
-|------|-------|----------------|
-| `get_customer` | CRM | Perfil ACME |
-| `get_customer_sales` | Sales | Receita, tendência |
-| `get_customer_tickets` | Tickets | Issues abertas |
+| Tool | Source | Example use |
+|------|--------|-------------|
+| `get_customer` | CRM | ACME profile |
+| `get_customer_sales` | Sales | Revenue, trend |
+| `get_customer_tickets` | Tickets | Open issues |
 | `get_customer_contracts` | Contracts | Renewal date |
-| `search_products` | Products | Catálogo |
-| `get_product` | Products | Detalhe produto |
+| `search_products` | Products | Catalog |
+| `get_product` | Products | Product detail |
 
-**Por que MCP e não reescrever APIs para AI?**
+**Why MCP instead of rewriting APIs for AI?**
 
 ```mermaid
 flowchart TB
-    REST[REST APIs existentes] -->|servem| Apps[Apps tradicionais]
-    REST -->|mesma API| MCP[MCP Server]
-    MCP -->|tools padronizadas| Agent[AI Agent]
+    REST[Existing REST APIs] -->|serve| Apps[Traditional apps]
+    REST -->|same API| MCP[MCP Server]
+    MCP -->|standard tools| Agent[AI Agent]
 
     classDef boundary fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
     class MCP boundary
 ```
 
-O MCP é uma **camada de integração AI** — não duplica regra de negócio.
+MCP is an **AI integration layer** — it does not duplicate business rules.
 
-## Semantic Kernel — Orquestração
+## Semantic Kernel — orchestration
 
-**Semantic Kernel (SK)** é o framework Microsoft para:
+**Semantic Kernel (SK)** is Microsoft's framework for:
 
-- Pluggar LLM (Azure OpenAI)
-- Registrar plugins / functions
-- Conectar MCP tools
-- Manter **prompts** e **orchestration** fora dos controllers HTTP
+- Plugging in LLM (Azure OpenAI)
+- Registering plugins / functions
+- Connecting MCP tools
+- Keeping **prompts** and **orchestration** out of HTTP controllers
 
 ```mermaid
 flowchart TB
@@ -153,16 +153,16 @@ flowchart TB
     class SK layer
 ```
 
-## Grounding, citations e responsible AI
+## Grounding, citations, and responsible AI
 
-| Conceito | Significado neste projeto |
-|----------|---------------------------|
-| **Grounding** | Resposta baseada em evidência recuperada (RAG ou API) |
-| **Citation** | Listar fontes reais (`contract-acme.pdf`, `renewal-policy.md`) |
-| **Hallucination** | Inventar dado de cliente — **proibido** |
-| **Uncertainty** | "Não há evidência suficiente para afirmar X" |
-| **FACT** | Dado vindo de MCP ou documento citado |
-| **AI RECOMMENDATION** | Sugestão inferida — rotulada na UI |
+| Concept | Meaning in this project |
+|---------|-------------------------|
+| **Grounding** | Answer based on retrieved evidence (RAG or API) |
+| **Citation** | List real sources (`contract-acme.pdf`, `renewal-policy.md`) |
+| **Hallucination** | Inventing customer data — **forbidden** |
+| **Uncertainty** | "Insufficient evidence to claim X" |
+| **FACT** | Data from MCP or cited document |
+| **AI RECOMMENDATION** | Inferred suggestion — labeled in UI |
 
 ```mermaid
 stateDiagram-v2
@@ -178,17 +178,17 @@ stateDiagram-v2
     LabelOutput --> [*]
 ```
 
-## Glossário rápido
+## Quick glossary
 
-| Termo | Definição curta |
-|-------|-----------------|
-| **Embedding** | Vetor numérico que representa significado de texto |
+| Term | Short definition |
+|------|------------------|
+| **Embedding** | Numeric vector representing text meaning |
 | **Hybrid search** | Keyword (BM25) + vector similarity |
-| **Chunk** | Pedaço de documento indexado (ex.: 800 tokens, overlap 120) |
-| **Top-K** | K documentos/chunks mais relevantes retornados |
-| **Tool calling** | LLM escolhe e invoca função externa (via MCP) |
-| **Foundry** | Plataforma Microsoft unificada para recursos AI no Azure |
+| **Chunk** | Indexed document slice (e.g. 800 tokens, overlap 120) |
+| **Top-K** | K most relevant documents/chunks returned |
+| **Tool calling** | LLM selects and invokes external function (via MCP) |
+| **Foundry** | Microsoft unified platform for Azure AI resources |
 
-## Próximo passo
+## Next step
 
 → [02 — Architecture Overview](02-architecture-overview.md)

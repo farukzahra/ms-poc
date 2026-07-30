@@ -1,8 +1,8 @@
 # Documentation — Enterprise AI Sales Intelligence
 
-Documentação de **aprendizado** para a POC Microsoft Azure AI Solution Engineering. Todo diagrama usa **Mermaid** (`flowchart`, `sequenceDiagram`, `stateDiagram-v2`) — evite `block-beta` (suporte limitado em alguns viewers).
+**Learning documentation** for the Microsoft Azure AI Solution Engineering POC. All diagrams use **Mermaid** (`flowchart`, `sequenceDiagram`, `stateDiagram-v2`) — avoid `block-beta` (limited support in some viewers).
 
-## Como estudar
+## How to study
 
 ```mermaid
 flowchart LR
@@ -17,39 +17,39 @@ flowchart LR
     class A,B,C,D,E,F,G step
 ```
 
-1. Leia na ordem numérica em [`learn/`](learn/) — cada guia assume o anterior.
-2. Consulte os **deep dives** quando precisar de detalhe técnico.
-3. Leia os **ADRs** para entender *por que* cada tecnologia foi escolhida.
-4. Mantenha [`PLAN.md`](PLAN.md) como especificação normativa (o que *deve* ser implementado).
+1. Read in numeric order under [`learn/`](learn/) — each guide builds on the previous one.
+2. Use **deep dives** when you need technical detail.
+3. Read **ADRs** to understand *why* each technology was chosen.
+4. Keep [`PLAN.md`](PLAN.md) as the normative spec (what *must* be implemented).
 
-## Trilha de aprendizado (`learn/`)
+## Learning path (`learn/`)
 
-| # | Documento | O que você aprende |
-|---|-----------|-------------------|
+| # | Document | What you learn |
+|---|----------|----------------|
 | 01 | [concepts.md](learn/01-concepts.md) | Agent vs chatbot, RAG, MCP, grounding, citations |
-| 02 | [architecture-overview.md](learn/02-architecture-overview.md) | Componentes, camadas, monorepo, princípio arquitetural |
-| 03 | [request-flow.md](learn/03-request-flow.md) | Sequência completa: Vue → API → Agent → MCP/RAG → LLM |
-| 04 | [agent-decisions.md](learn/04-agent-decisions.md) | Quando usar MCP, RAG ou ambos — árvore de decisão |
+| 02 | [architecture-overview.md](learn/02-architecture-overview.md) | Components, layers, monorepo, architectural principle |
+| 03 | [request-flow.md](learn/03-request-flow.md) | Full sequence: Vue → API → Agent → MCP/RAG → LLM |
+| 04 | [agent-decisions.md](learn/04-agent-decisions.md) | When to use MCP, RAG, or both — decision tree |
 | 05 | [azure-services.md](learn/05-azure-services.md) | OpenAI, AI Search, Blob, Container Apps, Entra ID |
-| 06 | [demo-scenarios.md](learn/06-demo-scenarios.md) | Os 5 cenários demo com fluxos esperados |
-| 07 | [development-phases.md](learn/07-development-phases.md) | Phase 1→6, o que implementar em cada etapa |
+| 06 | [demo-scenarios.md](learn/06-demo-scenarios.md) | Five demo scenarios with expected flows |
+| 07 | [development-phases.md](learn/07-development-phases.md) | Phase 1→6 — what to implement at each step |
 
-## Deep dives (referência técnica)
+## Deep dives (technical reference)
 
-| Documento | Conteúdo |
-|-----------|----------|
-| [architecture.md](architecture.md) | Arquitetura alvo, deployment local vs Azure, módulos |
-| [mcp.md](mcp.md) | Model Context Protocol, tools, transport HTTP |
-| [rag.md](rag.md) | Pipeline ingestion, chunking, hybrid search, citations |
+| Document | Content |
+|----------|---------|
+| [architecture.md](architecture.md) | Target architecture, local vs Azure deployment, modules |
+| [mcp.md](mcp.md) | Model Context Protocol, tools, HTTP transport |
+| [rag.md](rag.md) | Ingestion pipeline, chunking, hybrid search, citations |
 | [security.md](security.md) | Entra ID, RBAC, authorization, secrets |
-| [observability.md](observability.md) | Application Insights, telemetria do agent |
-| [cost.md](cost.md) | Budget $50, recursos que custam, otimizações |
-| [stack.md](stack.md) | Stack resumida, portas, skills |
+| [observability.md](observability.md) | Application Insights, agent telemetry |
+| [cost.md](cost.md) | $50 budget, cost drivers, optimizations |
+| [stack.md](stack.md) | Stack summary, ports, skills |
 
 ## Architecture Decision Records (`adrs/`)
 
-| ADR | Título |
-|-----|--------|
+| ADR | Title |
+|-----|-------|
 | [ADR-001](adrs/ADR-001-semantic-kernel.md) | Why Semantic Kernel |
 | [ADR-002](adrs/ADR-002-mcp.md) | Why MCP |
 | [ADR-003](adrs/ADR-003-azure-ai-search.md) | Why Azure AI Search |
@@ -57,21 +57,23 @@ flowchart LR
 | [ADR-005](adrs/ADR-005-local-vs-azure.md) | Local development vs Azure |
 | [ADR-006](adrs/ADR-006-agent-security.md) | Agent security model |
 
-## Especificação e operação
+## Specification and operations
 
-| Documento | Papel |
-|-----------|-------|
-| [PLAN.md](PLAN.md) | Especificação completa (52 seções) — fonte da verdade |
-| [../AGENTS.md](../AGENTS.md) | Regras para agentes de IA no repo |
-| [../README.md](../README.md) | Visão geral do projeto |
+| Document | Role |
+|----------|------|
+| [PLAN.md](PLAN.md) | Full specification (52 sections) — source of truth |
+| [../AGENTS.md](../AGENTS.md) | Rules for AI agents in this repo |
+| [../README.md](../README.md) | Project overview |
 
-## Regra de manutenção
+## Maintenance rule
 
-**Sempre que implementar uma feature**, atualizar:
+**Whenever you implement a feature**, update:
 
-1. O guia `learn/` correspondente (fluxo + diagrama de sequência)
-2. Deep dive se mudar contrato ou arquitetura
-3. ADR se for decisão irreversível ou nova alternativa rejeitada
-4. [`release-history.json`](release-history.json) no `/commit-push`
+1. The matching `learn/` guide (flow + sequence diagram)
+2. Deep dive if contract or architecture changed
+3. ADR if irreversible decision or new rejected alternative
+4. [`release-history.json`](release-history.json) on `/commit-push`
 
-Skills Cursor para docs: `design-doc-mermaid`, `documentation-and-adrs`.
+Cursor doc skills: `design-doc-mermaid`, `documentation-and-adrs`.
+
+**Language:** all documentation in this folder is **English only**.

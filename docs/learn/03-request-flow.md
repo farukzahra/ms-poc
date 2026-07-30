@@ -1,10 +1,10 @@
 # 03 — Request Flow
 
-Fluxo completo de uma pergunta do usuário até a resposta — o coração do sistema.
+End-to-end flow from user question to response — the heart of the system.
 
 ## Vertical slice — Phase 1 (MCP only)
 
-Primeira entrega funcional **sem Azure** — prova a cadeia Vue → Agent → MCP → CRM.
+First working delivery **without Azure** — proves Vue → Agent → MCP → CRM.
 
 ```mermaid
 sequenceDiagram
@@ -30,7 +30,7 @@ sequenceDiagram
     Vue-->>User: render message + tools badge
 ```
 
-## Fluxo completo — Phase 3+ (MCP + RAG + Azure OpenAI)
+## Full flow — Phase 3+ (MCP + RAG + Azure OpenAI)
 
 Briefing executivo: *"Prepare me for my meeting with ACME."*
 
@@ -158,11 +158,11 @@ flowchart TD
     class R503 fail
 ```
 
-`/ready` **nunca** expõe connection strings ou secrets — só status agregado.
+`/ready` **never** exposes connection strings or secrets — aggregated status only.
 
-## Ingestão de documentos (pipeline RAG)
+## Document ingestion (RAG pipeline)
 
-Fluxo offline — comando `python -m app.rag.ingest`:
+Offline flow — command `python -m app.rag.ingest`:
 
 ```mermaid
 flowchart TD
@@ -181,7 +181,7 @@ flowchart TD
 
 ## Telemetria por request (Phase 6)
 
-Cada execução gera trace correlacionado:
+Each execution produces a correlated trace:
 
 ```mermaid
 flowchart TB
@@ -198,8 +198,8 @@ flowchart TB
     class AgentExec trace
 ```
 
-Ver [observability.md](../observability.md) para detalhes.
+See [observability.md](../observability.md) for details.
 
-## Próximo passo
+## Next step
 
 → [04 — Agent Decisions](04-agent-decisions.md)

@@ -1,45 +1,45 @@
 # Enterprise AI Sales Intelligence Agent
 
-POC **Microsoft Azure AI Solution Engineering** — plataforma de inteligência de vendas com agente de IA que combina dados operacionais (MCP) e conhecimento documental (RAG).
+**Microsoft Azure AI Solution Engineering** POC — sales intelligence platform with an AI agent that combines operational data (MCP) and document knowledge (RAG).
 
-> *"Prepare me for my meeting with ACME."* → briefing executivo com CRM, vendas, tickets, contratos e políticas internas — com citações e distinção fato vs recomendação.
+> *"Prepare me for my meeting with ACME."* → executive briefing with CRM, sales, tickets, contracts, and internal policies — with citations and FACT vs AI RECOMMENDATION labels.
 
 ## Status
 
-| Fase | Estado |
-|------|--------|
-| Especificação | ✅ [`docs/PLAN.md`](docs/PLAN.md) |
+| Phase | State |
+|-------|-------|
+| Specification | ✅ [`docs/PLAN.md`](docs/PLAN.md) |
 | Skills + AGENTS | ✅ |
-| Phase 1 — vertical slice local | 🔲 pendente |
-| Azure OpenAI / Search / Blob | 🔲 pendente |
-| Deploy Container Apps | 🔲 pendente |
+| Phase 1 — local vertical slice | 🔲 pending |
+| Azure OpenAI / Search / Blob | 🔲 pending |
+| Container Apps deploy | 🔲 pending |
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|------------|
+| Layer | Technology |
+|-------|------------|
 | Agent | Semantic Kernel + Azure OpenAI |
-| Tools | MCP Server → REST APIs mock |
+| Tools | MCP Server → mock REST APIs |
 | Knowledge | Azure AI Search + RAG |
 | Backend | Python 3.12 · FastAPI |
 | Frontend | Vue 3 · Vite · TypeScript |
 | Cloud | Azure Container Apps · Blob · Key Vault · Entra ID |
 | Observability | Application Insights |
 
-Detalhes: [`docs/stack.md`](docs/stack.md)
+Details: [`docs/stack.md`](docs/stack.md)
 
-## Documentação (aprendizado)
+## Documentation (learning)
 
-**Comece aqui:** [`docs/README.md`](docs/README.md) — trilha com 7 guias + diagramas Mermaid.
+**Start here:** [`docs/README.md`](docs/README.md) — 7 guides + Mermaid diagrams.
 
-| Trilha | Conteúdo |
-|--------|----------|
+| Path | Content |
+|------|---------|
 | [learn/01-concepts](docs/learn/01-concepts.md) | Agent, RAG, MCP, grounding |
-| [learn/03-request-flow](docs/learn/03-request-flow.md) | Sequência Vue → API → Agent |
-| [architecture.md](docs/architecture.md) | Arquitetura consolidada |
-| [adrs/](docs/adrs/) | Decisões arquiteturais (ADR-001…006) |
+| [learn/03-request-flow](docs/learn/03-request-flow.md) | Vue → API → Agent sequence |
+| [architecture.md](docs/architecture.md) | Consolidated architecture |
+| [adrs/](docs/adrs/) | Architecture decisions (ADR-001…006) |
 
-## Arquitetura (alvo)
+## Target architecture
 
 ```text
                      SALES USER
@@ -63,20 +63,20 @@ Detalhes: [`docs/stack.md`](docs/stack.md)
            Azure OpenAI (Foundry)
 ```
 
-## Quick start (quando Phase 1 existir)
+## Quick start (when Phase 1 exists)
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-| Serviço | URL |
+| Service | URL |
 |---------|-----|
 | Frontend | http://localhost:5173 |
 | API | http://localhost:8000 |
 | Health | http://localhost:8000/health |
 
-## Repositório
+## Repository layout
 
 ```
 ms-poc/
@@ -85,53 +85,57 @@ ms-poc/
 │   ├── mcp-server/    # MCP tools
 │   └── web/           # Vue 3
 ├── services/          # mock enterprise APIs
-├── data/              # dataset ACME (fictício)
-├── infrastructure/    # Bicep Azure
+├── data/              # fictional ACME dataset
+├── infrastructure/    # Azure Bicep
 ├── docs/
-│   ├── PLAN.md        # especificação completa
+│   ├── PLAN.md        # full specification
 │   └── stack.md
-├── AGENTS.md          # guia para agentes de IA
+├── AGENTS.md          # guide for AI agents
 └── skills-lock.json
 ```
 
-## Desenvolvimento em fases
+## Development phases
 
 1. **Local** — FastAPI + Semantic Kernel + MCP + mocks + Vue
-2. **Azure OpenAI** — LLM e tool calling reais
-3. **Azure AI Search** — ingestion, hybrid search, citações
-4. **Blob Storage** — repositório de documentos
+2. **Azure OpenAI** — real LLM and tool calling
+3. **Azure AI Search** — ingestion, hybrid search, citations
+4. **Blob Storage** — document repository
 5. **Container Apps** — deploy
 6. **Entra ID + Key Vault + App Insights**
 
-Ver [`docs/PLAN.md` §36](docs/PLAN.md#36-development-strategy).
+See [`docs/PLAN.md` §36](docs/PLAN.md#36-development-strategy).
 
 ## Agent skills (Cursor)
 
-Restaurar após clone:
+Restore after clone:
 
 ```bash
 npx skills experimental_install
 ```
 
-Workflow e mapa tech→skill: [`AGENTS.md`](AGENTS.md).
+Workflow and tech→skill map: [`AGENTS.md`](AGENTS.md).
 
-## Cenários demo
+## Demo scenarios
 
-| Pergunta | Esperado |
+| Question | Expected |
 |----------|----------|
 | Prepare me for my meeting with ACME | MCP + RAG |
 | How much did ACME spend last year? | MCP only |
 | What is our enterprise AI deployment policy? | RAG only |
 | What are the biggest risks to ACME's renewal? | MCP + RAG + reasoning |
 
-## Custo Azure
+## Azure cost
 
-POC orientada a **~$50** com alertas de budget. Ver `docs/cost.md` (a criar) e PLAN §9/§35.
+POC targets **~$50** with budget alerts. See [`docs/cost.md`](docs/cost.md) and PLAN §9/§35.
 
 ## From POC to Production
 
-O README final incluirá evolução para multi-agent, private endpoints, managed identities, CI/CD e governança — ver [`docs/PLAN.md` §44](docs/PLAN.md#44-production-architecture).
+Evolution to multi-agent, private endpoints, managed identities, CI/CD, and governance — [`docs/PLAN.md` §44](docs/PLAN.md#44-production-architecture).
 
-## Licença
+## Language
 
-Projeto privado — POC de entrevista / demonstração.
+**English only** for all repo content (docs, UI, comments). See [`.cursor/rules/english-only.mdc`](.cursor/rules/english-only.mdc).
+
+## License
+
+Private project — interview / demonstration POC.

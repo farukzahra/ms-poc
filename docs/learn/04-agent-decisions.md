@@ -1,8 +1,8 @@
 # 04 — Agent Decisions: MCP vs RAG
 
-O diferencial desta POC é o agent **decidir** qual capacidade usar — não chamar tudo sempre.
+This POC's differentiator is the agent **deciding** which capability to use — not calling everything every time.
 
-## Árvore de decisão
+## Decision tree
 
 ```mermaid
 flowchart TD
@@ -25,19 +25,19 @@ flowchart TD
     class Both,Ex3 both
 ```
 
-## Matriz de cenários demo
+## Demo scenario matrix
 
-| # | Pergunta | MCP | RAG | Reasoning |
+| # | Question | MCP | RAG | Reasoning |
 |---|----------|-----|-----|-----------|
-| 1 | Prepare me for my meeting with ACME | ✅ | ✅ | Briefing = dados + docs |
-| 2 | How much did ACME spend last year? | ✅ | ❌ | Número em Sales API |
-| 3 | What is our enterprise AI deployment policy? | ❌ | ✅ | Política em documento |
-| 4 | What products should we recommend to ACME? | ✅ | ✅ | Catálogo + histórico + docs |
+| 1 | Prepare me for my meeting with ACME | ✅ | ✅ | Briefing = data + docs |
+| 2 | How much did ACME spend last year? | ✅ | ❌ | Number in Sales API |
+| 3 | What is our enterprise AI deployment policy? | ❌ | ✅ | Policy in document |
+| 4 | What products should we recommend to ACME? | ✅ | ✅ | Catalog + history + docs |
 | 5 | Biggest risks to ACME's renewal? | ✅ | ✅ | Tickets + contract + policy |
 
-## Fluxo por cenário
+## Flow by scenario
 
-### Cenário 2 — MCP only
+### Scenario 2 — MCP only
 
 ```mermaid
 sequenceDiagram
@@ -56,7 +56,7 @@ sequenceDiagram
     Note over A: No RAG call — avoids wrong doc snippets
 ```
 
-### Cenário 3 — RAG only
+### Scenario 3 — RAG only
 
 ```mermaid
 sequenceDiagram
@@ -75,7 +75,7 @@ sequenceDiagram
     Note over A: No MCP — CRM irrelevant
 ```
 
-### Cenário 5 — MCP + RAG + reasoning
+### Scenario 5 — MCP + RAG + reasoning
 
 ```mermaid
 flowchart TB
@@ -97,20 +97,20 @@ flowchart TB
     class Out rec
 ```
 
-## System prompt — regras que guiam decisões
+## System prompt — rules that guide decisions
 
-O prompt vive **fora** do código (`prompts/sales-agent.system.md`):
+The prompt lives **outside** code (`prompts/sales-agent.system.md`):
 
-| Regra | Efeito na decisão |
+| Rule | Effect on decision |
 |-------|-------------------|
-| Never invent customer data | Prefere MCP para facts |
+| Never invent customer data | Prefer MCP for facts |
 | Prefer structured systems for transactional info | Sales/revenue → MCP |
 | Use RAG for organizational knowledge | Policies → RAG |
 | Use both when necessary | Briefings |
 | Cite retrieved documents | RAG responses only |
 | If evidence insufficient, say so | No guessing |
 
-## Anti-patterns a evitar
+## Anti-patterns to avoid
 
 ```mermaid
 flowchart LR
@@ -134,9 +134,9 @@ flowchart LR
     class Good good
 ```
 
-## Evaluation — medir tool selection
+## Evaluation — measure tool selection
 
-Dataset em `data/eval/tool-selection.json`:
+Dataset in `data/eval/tool-selection.json`:
 
 ```json
 {
@@ -154,8 +154,8 @@ Dataset em `data/eval/tool-selection.json`:
 }
 ```
 
-Métricas: tool selection accuracy, grounding rate, citation accuracy — ver [llm-evaluation skill](../../.agents/skills/llm-evaluation/SKILL.md).
+Metrics: tool selection accuracy, grounding rate, citation accuracy — see [llm-evaluation skill](../../.agents/skills/llm-evaluation/SKILL.md).
 
-## Próximo passo
+## Next step
 
 → [05 — Azure Services](05-azure-services.md)

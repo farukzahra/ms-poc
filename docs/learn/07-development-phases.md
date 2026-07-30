@@ -1,6 +1,6 @@
 # 07 — Development Phases
 
-Roadmap de implementação — **nunca tudo de uma vez**. Cada fase deixa o sistema executável.
+Implementation roadmap — **never all at once**. Each phase leaves the system runnable.
 
 ## Timeline visual
 
@@ -33,13 +33,13 @@ flowchart LR
 
 **Deliverables:**
 
-- [ ] `docker compose up` sobe tudo
-- [ ] `POST /api/v1/chat` responde com dados CRM via MCP
-- [ ] Vue chat básico
+- [ ] `docker compose up` starts everything
+- [ ] `POST /api/v1/chat` returns CRM data via MCP
+- [ ] Basic Vue chat
 - [ ] pytest: agent → MCP → mock API
-- [ ] Mock LLM ou resposta determinística (sem Azure ainda)
+- [ ] Mock LLM or deterministic response (no Azure yet)
 
-**Decisões registradas:**
+**Recorded decisions:**
 
 - Python: **uv**
 - MCP transport: **streamable-http :8001**
@@ -100,9 +100,9 @@ flowchart LR
 
 ## Definition of Done — checklist
 
-Ver [PLAN.md §51](../PLAN.md#51-definition-of-done) — 22 itens.
+See [PLAN.md §51](../PLAN.md#51-definition-of-done) — 22 items.
 
-## Regras durante implementação
+## Rules during implementation
 
 ```mermaid
 flowchart TD
@@ -115,8 +115,8 @@ flowchart TD
     class R1,R2,R3,R4,R5 rule
 ```
 
-## Próximo passo
+## Next step
 
-Implementar **Phase 1** — começar por `writing-plans` → plano em `docs/superpowers/plans/`.
+Implement **Phase 1** — start with `writing-plans` → plan in `docs/superpowers/plans/`.
 
-Voltar ao índice: [docs/README.md](../README.md)
+Back to index: [docs/README.md](../README.md)

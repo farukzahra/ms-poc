@@ -1,8 +1,8 @@
 # 06 — Demo Scenarios
 
-Os **5 cenários** que provam valor na demo de 10 minutos e na entrevista.
+The **5 scenarios** that prove value in the 10-minute demo and interview.
 
-## Overview da demo (10 min)
+## Demo overview (10 min)
 
 ```mermaid
 flowchart LR
@@ -20,7 +20,7 @@ flowchart LR
 
 ## Dataset — ACME Corporation
 
-| Atributo | Valor demo | Por quê importa |
+| Attribute | Demo value | Why it matters |
 |----------|------------|-----------------|
 | Revenue trend | -12% QoQ | Risk signal |
 | Open tickets | 3 | Support risk |
@@ -28,9 +28,9 @@ flowchart LR
 | Products | Analytics + Enterprise Platform | Upsell context |
 | Opportunity | Enterprise AI Automation | Talking point |
 
-Clientes adicionais: **Globex**, **Initech** — mesma estrutura, relações diferentes.
+Additional customers: **Globex**, **Initech** — same structure, different relationships.
 
-## Cenário 1 — Executive briefing
+## Scenario 1 — Executive briefing
 
 **Input:**
 
@@ -61,7 +61,7 @@ flowchart TB
 - Risks (FACT + RECOMMENDATION)
 - Sources list
 
-## Cenário 2 — Structured data only
+## Scenario 2 — Structured data only
 
 **Input:** `How much did ACME spend last year?`
 
@@ -69,7 +69,7 @@ flowchart TB
 
 **Talking point entrevista:** *"Revenue is transactional — it lives in the sales system, not in PDFs."*
 
-## Cenário 3 — Knowledge only
+## Scenario 3 — Knowledge only
 
 **Input:** `What is our enterprise AI deployment policy?`
 
@@ -77,13 +77,13 @@ flowchart TB
 
 **Talking point:** *"Policies change — they stay external to the model in Search index."*
 
-## Cenário 4 — Product recommendation
+## Scenario 4 — Product recommendation
 
 **Input:** `What products should we recommend to ACME?`
 
 **Expected:** MCP (history, current products) + RAG (product docs, compatibility)
 
-## Cenário 5 — Renewal risk
+## Scenario 5 — Renewal risk
 
 **Input:** `What are the biggest risks to ACME's renewal?`
 
@@ -105,7 +105,7 @@ sequenceDiagram
     A-->>U: Risk summary with citations
 ```
 
-## UI mock — chat com sources
+## UI mock — chat with sources
 
 ```text
 ┌──────────────────────────────────────────────┐
@@ -133,7 +133,7 @@ sequenceDiagram
 
 ## Interview talking points (resumo)
 
-| Pergunta | Resposta curta |
+| Question | Short answer |
 |----------|----------------|
 | Why Agent? | Dynamic tool selection per question |
 | Why MCP? | Standard AI boundary over existing REST APIs |
@@ -142,6 +142,6 @@ sequenceDiagram
 | Why Semantic Kernel? | Microsoft orchestration + Azure integration |
 | Why Container Apps? | Managed containers without K8s complexity |
 
-## Próximo passo
+## Next step
 
 → [07 — Development Phases](07-development-phases.md)

@@ -1,6 +1,6 @@
 # System Architecture
 
-Referência arquitetural consolidada. Trilha de aprendizado: [`learn/`](learn/).
+Consolidated architecture reference. Learning path: [`learn/`](learn/).
 
 ## Goals
 

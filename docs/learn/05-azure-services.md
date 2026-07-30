@@ -1,8 +1,8 @@
 # 05 — Azure Services
 
-Mapa de cada serviço Azure no projeto — **o que faz**, **quando entra**, **como se conecta**.
+Map of each Azure service in the project — **what it does**, **when it is introduced**, **how it connects**.
 
-## Mapa de serviços
+## Service map
 
 ```mermaid
 flowchart TB
@@ -31,20 +31,20 @@ flowchart TB
     class OAI,Search,Blob,ACA,KV,AI,Entra svc
 ```
 
-## Fase de introdução
+## Introduction timeline
 
-| Serviço | Phase | Por quê esperar |
-|---------|-------|-----------------|
-| Mock APIs + Docker | 1 | Provar arquitetura sem custo |
-| Azure OpenAI | 2 | LLM real, tool calling |
+| Service | Phase | Why wait |
+|---------|-------|----------|
+| Mock APIs + Docker | 1 | Prove architecture at zero Azure cost |
+| Azure OpenAI | 2 | Real LLM, tool calling |
 | Azure AI Search | 3 | RAG, hybrid search |
-| Blob Storage | 4 | Fonte canonica de docs |
-| Container Apps | 5 | Deploy managed |
+| Blob Storage | 4 | Canonical document source |
+| Container Apps | 5 | Managed deploy |
 | Entra + Key Vault + Insights | 6 | Security + observability |
 
 ## Azure OpenAI / Microsoft Foundry
 
-**Papel:** inferência LLM + embeddings.
+**Role:** LLM inference + embeddings.
 
 ```mermaid
 flowchart LR
@@ -62,7 +62,7 @@ flowchart LR
     class Chat,Emb model
 ```
 
-**Env vars** (ver `.env.example`):
+**Env vars** (see `.env.example`):
 
 ```env
 AZURE_AI_ENDPOINT=
@@ -71,15 +71,15 @@ AZURE_CHAT_DEPLOYMENT=
 AZURE_EMBEDDING_DEPLOYMENT=
 ```
 
-**Regras:**
+**Rules:**
 
-- Modelos configuráveis — não hardcodar API version deprecated
-- Modelos **pequenos** para POC (custo)
-- Não commitar keys — Key Vault em produção
+- Configurable models — do not hardcode deprecated API versions
+- **Small** models for POC (cost)
+- Do not commit keys — Key Vault in production
 
 ## Azure AI Search
 
-**Papel:** retrieval layer — **não** é o LLM.
+**Role:** retrieval layer — **not** the LLM.
 
 **Index `enterprise-knowledge`:**
 
@@ -87,12 +87,12 @@ AZURE_EMBEDDING_DEPLOYMENT=
 |-------|------|-----|
 | `id` | string | PK |
 | `content` | string | Texto do chunk |
-| `title` | string | Título documento |
+| `title` | string | Document title |
 | `document_type` | string | policy, contract, product |
 | `customer_id` | string | Filtro ACME-001 |
 | `department` | string | Filtro org |
 | `source` | string | Nome arquivo origem |
-| `created_at` | datetime | Ordenação |
+| `created_at` | datetime | Sort order |
 | `content_vector` | vector | Dim = embedding model |
 
 ```mermaid
@@ -129,11 +129,11 @@ flowchart LR
     Pipeline --> Search[(AI Search index)]
 ```
 
-**Phase 4:** Blob vira source of truth; local `data/` espelha para dev.
+**Phase 4:** Blob becomes source of truth; local `data/` mirrors for dev.
 
 ## Azure Container Apps
 
-**Papel:** hospedar FastAPI sem gerenciar Kubernetes.
+**Role:** host FastAPI without managing Kubernetes.
 
 ```mermaid
 flowchart TB
@@ -159,7 +159,7 @@ Requisitos container:
 
 ## Microsoft Entra ID
 
-**Phase 6** — autenticação enterprise.
+**Phase 6** — enterprise authentication.
 
 ```mermaid
 sequenceDiagram
@@ -180,21 +180,21 @@ sequenceDiagram
 
 ## Application Insights
 
-Correlaciona: `request_id`, `conversation_id`, latências LLM/MCP/RAG, token usage.
+Correlates: `request_id`, `conversation_id`, LLM/MCP/RAG latencies, token usage.
 
-Ver [observability.md](../observability.md).
+See [observability.md](../observability.md).
 
-## Budget e região
+## Budget and region
 
-| Config | Valor POC |
+| Config | POC value |
 |--------|-----------|
 | Resource group | `rg-ai-sales-poc` |
-| Region | `eastus` (consistente) |
-| Budget alert | ~$50 com alertas 50/75/90/100% |
+| Region | `eastus` (consistent) |
+| Budget alert | ~$50 with 50/75/90/100% alerts |
 
-Detalhes: [cost.md](../cost.md).
+Details: [cost.md](../cost.md).
 
-## Azure CLI — comandos essenciais
+## Azure CLI — essential commands
 
 ```bash
 az login
@@ -203,12 +203,12 @@ az group create --name rg-ai-sales-poc --location eastus
 az deployment group create --resource-group rg-ai-sales-poc --template-file infrastructure/azure/bicep/main.bicep
 ```
 
-Nunca hardcodar subscription ID — usar:
+Never hardcode subscription ID — use:
 
 ```bash
 SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 ```
 
-## Próximo passo
+## Next step
 
 → [06 — Demo Scenarios](06-demo-scenarios.md)

@@ -1,15 +1,15 @@
 ---
-description: Tentar automatizar com PAT/SSH/API antes de pedir passo manual ao usuário
+description: Automate with PAT/SSH/API before asking the user for manual steps
 alwaysApply: true
 ---
 
-# Automatizar antes de pedir passo manual
+# Automate before asking for manual steps
 
-Antes de instruir o usuário a fazer algo manualmente no browser, painel externo ou terminal dele:
+Before instructing the user to do something manually in a browser, external panel, or their terminal:
 
-1. **Executar primeiro** — verificar se PAT, chave SSH, API, script ou credencial documentada permite resolver.
-2. **Fontes comuns (Faruk)** — `C:\repo\financeiro\planos\vps-secrets\` (`github-pat.txt`, `deploy_key`), guias em `docs/database-setup.md`, `docs/deploy-vps.md`, `secrets.local.md` no projeto.
-3. **Não pedir permissão** para o que já pode ser feito com as chaves existentes.
-4. **Só escalar ao usuário** quando a automação for impossível (OAuth de GitHub App, 2FA, Registro.br, etc.) — e nesse caso dizer **exatamente** o que criar (token, scope, secret name).
+1. **Execute first** — check whether PAT, SSH key, API, script, or documented credentials can resolve it.
+2. **Common sources (Faruk)** — `C:\repo\financeiro\planos\vps-secrets\` (`github-pat.txt`, `deploy_key`), guides in `docs/database-setup.md`, `docs/deploy-vps.md`, project `secrets.local.md`.
+3. **Do not ask permission** for what can already be done with existing keys.
+4. **Escalate to the user** only when automation is impossible (GitHub App OAuth, 2FA, domain registrar, etc.) — and state **exactly** what to create (token, scope, secret name).
 
-Nunca enviar checklist manual sem antes tentar via API/SSH/PAT.
+Never send a manual checklist without first trying API/SSH/PAT.

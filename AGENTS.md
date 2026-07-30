@@ -1,20 +1,32 @@
 # AGENTS.md
 
-Guia operacional para agentes de IA no projeto **Enterprise AI Sales Intelligence** (POC Microsoft Azure AI Solution Engineering).
+Operational guide for AI agents working on **Enterprise AI Sales Intelligence** (Microsoft Azure AI Solution Engineering POC).
 
-## O que é este repo
+## What this repo is
 
-POC enterprise-grade de **Sales Intelligence Agent** — combina dados estruturados (CRM, vendas, tickets via MCP) com conhecimento documental (RAG + Azure AI Search) para briefings executivos de vendas.
+Enterprise-grade **Sales Intelligence Agent** POC — combines structured data (CRM, sales, tickets via MCP) with document knowledge (RAG + Azure AI Search) for executive sales briefings.
 
-**Não é um chatbot genérico.** É um agente que decide dinamicamente entre MCP, RAG ou ambos.
+**Not a generic chatbot.** The agent dynamically chooses MCP, RAG, or both.
 
-Leia antes de codar:
+Read before coding:
 
-- [`docs/PLAN.md`](docs/PLAN.md) — especificação completa (52 seções)
-- [`docs/stack.md`](docs/stack.md) — stack, portas, fases
-- [`.env.example`](.env.example) — variáveis de ambiente
+- [`docs/PLAN.md`](docs/PLAN.md) — full specification (52 sections)
+- [`docs/stack.md`](docs/stack.md) — stack, ports, phases
+- [`.env.example`](.env.example) — environment variables
 
-## Stack resumida
+## Language (mandatory)
+
+**Everything in this repository is English-only.**
+
+| Artifact | Language |
+|----------|----------|
+| Documentation (`docs/`, README, ADRs) | **English** |
+| UI copy, errors, demo labels | **English** |
+| Code comments | **English** |
+| Commit messages | **English** (Conventional Commits) |
+| Cursor rule | [`.cursor/rules/english-only.mdc`](.cursor/rules/english-only.mdc) |
+
+## Stack summary
 
 | Layer | Choice |
 |-------|--------|
@@ -30,97 +42,97 @@ Leia antes de codar:
 | Local | Docker Compose |
 | Tests | pytest · Playwright E2E |
 
-## Workflow do agente
+## Agent workflow
 
 ```
 brainstorming
   → writing-plans
-  → implement (tdd + skills de domínio)
+  → implement (tdd + domain skills)
   → verification-before-completion
-  → commit (caveman-commit — só quando o usuário pedir)
+  → commit (caveman-commit — only when user asks)
 ```
 
-| Fase | Skill | Regra |
-|------|-------|-------|
-| Design | `brainstorming` | Sem código até design aprovado |
-| Plano | `writing-plans` | Salvar em `docs/superpowers/plans/` |
-| Build | `tdd` | Red → green; testar nas costuras públicas |
-| FastAPI | `fastapi`, `fastapi-templates` | Estrutura async, DI, camadas separadas |
-| MCP | `mcp-builder`, `python-mcp-server-generator` | Tools tipadas; boundary sobre REST APIs |
-| RAG | `rag-implementation`, `azure-ai` | Hybrid search; citações obrigatórias |
-| Azure | `azure-prepare`, `azure-ai`, `azure-storage`, `azure-deploy` | Budget; não hardcodar API versions |
+| Phase | Skill | Rule |
+|-------|-------|------|
+| Design | `brainstorming` | No code until design approved |
+| Plan | `writing-plans` | Save to `docs/superpowers/plans/` |
+| Build | `tdd` | Red → green; test at public seams |
+| FastAPI | `fastapi`, `fastapi-templates` | Async structure, DI, layered |
+| MCP | `mcp-builder`, `python-mcp-server-generator` | Typed tools; REST boundary |
+| RAG | `rag-implementation`, `azure-ai` | Hybrid search; citations required |
+| Azure | `azure-prepare`, `azure-ai`, `azure-storage`, `azure-deploy` | Budget; no hardcoded API versions |
 | Vue | `vue-best-practices` | Chat UI, sources, fact vs recommendation |
-| Testes Python | `python-testing-patterns` | pytest, mocks, httpx |
-| Avaliação LLM | `llm-evaluation` | Dataset em `data/eval/` |
-| E2E | `playwright-best-practices` | Mock writes quando possível |
-| Debug | `systematic-debugging` | Causa raiz antes de fixes |
-| Done | `verification-before-completion` | Rodar testes; evidência; subir stack local |
-| Commit | `caveman-commit` | Conventional Commits, English — só quando pedido |
+| Python tests | `python-testing-patterns` | pytest, mocks, httpx |
+| LLM eval | `llm-evaluation` | Dataset in `data/eval/` |
+| E2E | `playwright-best-practices` | Mock writes when possible |
+| Debug | `systematic-debugging` | Root cause before fixes |
+| Done | `verification-before-completion` | Run tests; evidence; start local stack |
+| Commit | `caveman-commit` | English Conventional Commits — only when asked |
+| Docs | `design-doc-mermaid`, `documentation-and-adrs` | **Always** when documenting flows / ADRs |
 
-## Mapa tecnologia → skill
+## Technology → skill map
 
-| Tecnologia | Skill(s) | Cobertura |
-|------------|----------|-----------|
+| Technology | Skill(s) | Coverage |
+|------------|----------|----------|
 | Microsoft Foundry / Azure OpenAI | `azure-ai` | LLM, embeddings, AI Search SDK |
 | Azure AI Search | `azure-ai`, `rag-implementation` | Index, hybrid search, ingestion |
 | Azure Blob Storage | `azure-storage` | Document repository |
-| Semantic Kernel | — (PLAN.md + docs Microsoft) | **Sem skill dedicada** |
-| MCP | `mcp-builder`, `python-mcp-server-generator` | Server Python, tools |
-| Python / FastAPI | `fastapi`, `fastapi-templates`, `python-testing-patterns` | API, estrutura, pytest |
+| Semantic Kernel | — (PLAN.md + Microsoft docs) | **No dedicated skill** |
+| MCP | `mcp-builder`, `python-mcp-server-generator` | Python server, tools |
+| Python / FastAPI | `fastapi`, `fastapi-templates`, `python-testing-patterns` | API, structure, pytest |
 | Vue 3 | `vue-best-practices` | Composition API, TS |
-| Docker / Compose | — (PLAN.md §30) | **Sem skill dedicada** |
-| Azure Container Apps | `azure-deploy` | Deploy containers |
-| Bicep / IaC | `azure-prepare` | Módulos, resource group |
-| Entra ID | `azure-prepare` (parcial) | Auth — detalhes no PLAN §22 |
-| Application Insights | `azure-ai` (parcial) | Telemetria agent |
-| Key Vault | `azure-prepare` | Secrets em deploy |
-| Playwright E2E | `playwright-best-practices` | Specs Vue |
+| Docker / Compose | — (PLAN.md §30) | **No dedicated skill** |
+| Azure Container Apps | `azure-deploy` | Container deploy |
+| Bicep / IaC | `azure-prepare` | Modules, resource group |
+| Entra ID | `azure-prepare` (partial) | Auth — PLAN §22 |
+| Application Insights | `azure-ai` (partial) | Agent telemetry |
+| Key Vault | `azure-prepare` | Deploy secrets |
+| Playwright E2E | `playwright-best-practices` | Vue specs |
 | LLM evaluation | `llm-evaluation` | Tool selection, grounding |
-| Docs + Mermaid | `design-doc-mermaid`, `documentation-and-adrs` | **Sempre** ao documentar fluxos e ADRs |
-| Prisma / Next.js | `prisma-*`, `vercel-react-best-practices` | **Não usados neste projeto** |
+| Prisma / Next.js | `prisma-*`, `vercel-react-best-practices` | **Not used in this project** |
 
-### Skills herdadas (Faruk Base) — uso limitado
+### Inherited skills (Faruk Base) — limited use
 
-| Skill | Neste projeto |
-|-------|---------------|
-| `frontend-design`, `hallmark` | UI mínima — não priorizar design |
-| `vercel-react-best-practices` | Não aplicável (Vue, não React) |
-| `nodejs-backend-patterns` | Não aplicável (Python) |
-| `prisma-*` | Não aplicável (sem Prisma) |
+| Skill | In this project |
+|-------|-----------------|
+| `frontend-design`, `hallmark` | Minimal UI — do not prioritize design |
+| `vercel-react-best-practices` | N/A (Vue, not React) |
+| `nodejs-backend-patterns` | N/A (Python) |
+| `prisma-*` | N/A (no Prisma) |
 
-## Restore skills após clone
+## Restore skills after clone
 
 ```bash
 npx skills experimental_install
 ```
 
-28 skills em `.agents/skills/` — lock em [`skills-lock.json`](skills-lock.json).
+30 skills in `.agents/skills/` — lock in [`skills-lock.json`](skills-lock.json).
 
-## Fase atual: Phase 1 (vertical slice)
+## Current phase: Phase 1 (vertical slice)
 
-**Não implementar tudo de uma vez.** Primeira entrega:
+**Do not implement everything at once.** First delivery:
 
 ```text
 User → Vue → FastAPI → Semantic Kernel Agent → MCP → CRM API → Answer
 ```
 
-Inclui: mocks CRM/Sales/Tickets, MCP server, agent básico, chat Vue.
+Includes: mock CRM/Sales/Tickets, MCP server, basic agent, Vue chat.
 
-**Somente depois:** Azure OpenAI → AI Search → Blob → Container Apps → Entra/App Insights.
+**Only after that:** Azure OpenAI → AI Search → Blob → Container Apps → Entra/App Insights.
 
-## Regras de arquitetura (obrigatórias)
+## Architecture rules (mandatory)
 
-1. **Separar** orchestration (agent) de HTTP controllers.
-2. **MCP** chama REST APIs existentes — não duplicar lógica de negócio.
-3. **RAG** para conhecimento documental; **MCP** para dados transacionais.
-4. **Citações** em toda resposta RAG; nunca inventar fontes.
-5. **FACT** vs **AI RECOMMENDATION** — distinguir na UI e no prompt.
-6. **Autorização** derivada da identidade autenticada — nunca confiar só em `customer_id` do frontend.
-7. **Não commitar** secrets (`.env`, keys, tokens).
-8. **Não declarar** integração Azure OK sem teste contra serviço real.
-9. **Budget Azure** — modelos pequenos, alertas, cleanup documentado.
+1. **Separate** orchestration (agent) from HTTP controllers.
+2. **MCP** calls existing REST APIs — no duplicated business logic.
+3. **RAG** for document knowledge; **MCP** for transactional data.
+4. **Citations** on every RAG-influenced answer; never invent sources.
+5. **FACT** vs **AI RECOMMENDATION** — distinguish in UI and prompt.
+6. **Authorization** from authenticated identity — never trust frontend `customer_id` alone.
+7. **Do not commit** secrets (`.env`, keys, tokens).
+8. **Do not claim** Azure integration works without testing against real services.
+9. **Azure budget** — small models, alerts, cleanup documented.
 
-## Estrutura alvo
+## Target structure
 
 ```
 apps/api/app/
@@ -139,88 +151,81 @@ infrastructure/azure/bicep/
 docs/              # architecture, security, rag, mcp, cost, ADRs
 ```
 
-## Perguntas ao usuário
+## Asking the user
 
-Quando a decisão for do usuário e não puder inferir do PLAN:
+When the decision is the user's and cannot be inferred from the PLAN:
 
-1. Preferir **AskQuestion** (Cursor) ou bloco copy-paste editável.
-2. Uma decisão por mensagem quando possível.
-3. **Database gate não se aplica** — este projeto não usa PostgreSQL/Prisma.
+1. Prefer **AskQuestion** (Cursor) or an editable copy-paste block.
+2. One decision per message when possible.
+3. **Database gate does not apply** — no PostgreSQL/Prisma in this project.
 
-### Decisões Azure pendentes (perguntar antes de Phase 2+)
+### Pending Azure decisions (ask before Phase 2+)
 
-- Subscription / resource group já existente?
-- Região preferida (padrão PLAN: `eastus`)?
-- Modelos chat + embedding a deployar (nomes exatos)?
-- Budget máximo e e-mail para alertas?
-
-## Idioma
-
-- **Commits:** English, Conventional Commits
-- **Copy da UI / docs de produto:** Português (demo pode ser EN se preferir entrevista MS)
-- **Skills (SKILL.md):** English
-- **Respostas ao usuário:** Português
+- Existing subscription / resource group?
+- Preferred region (PLAN default: `eastus`)?
+- Exact chat + embedding deployment names?
+- Max budget and alert email?
 
 ## Git
 
-- Commit **somente** quando o usuário pedir
-- Nunca force-push em `main`
-- Nunca commitar `.env` ou credenciais
+- Commit **only** when the user asks
+- Never force-push to `main`
+- Never commit `.env` or credentials
 
-## Testes
+## Testing
 
-| Tipo | Tool | Local |
-|------|------|-------|
+| Type | Tool | Location |
+|------|------|----------|
 | Unit | pytest | `apps/api/tests/`, `apps/mcp-server/tests/` |
 | Integration | pytest + httpx | Agent → MCP → mock API |
 | E2E | Playwright | `apps/web/e2e/` |
 
-E2E **não deve escrever** em Azure real — mockar API ou usar ambiente de teste.
+E2E must **not write** to real Azure — mock API or dedicated test env.
 
-Antes de dizer "pronto": `verification-before-completion`.
+Before saying "done": `verification-before-completion`.
 
-## Dev server (fim de task)
+## Dev server (end of task)
 
-Ao concluir task com código executável, **subir stack local sem pedir permissão** se estiver down:
+When finishing a task with runnable code, **start the local stack without asking** if it is down:
 
 ```bash
 docker compose up --build
 ```
 
-| Validação | URL / comando |
-|-----------|---------------|
+| Validation | URL / command |
+|------------|---------------|
 | API | `GET http://localhost:8000/health` |
-| Frontend | http://localhost:5173 — título "Enterprise AI Sales Intelligence" |
-| MCP | conforme transport configurado |
+| Frontend | http://localhost:5173 — title "Enterprise AI Sales Intelligence" |
+| MCP | per configured transport |
 
-Informar URLs efetivas ao usuário.
+Report effective URLs to the user.
 
-## Documentação (obrigatório manter)
+## Documentation (mandatory maintenance)
 
-**Este projeto é de aprendizado** — toda feature implementada deve atualizar a doc correspondente.
+**This is a learning project** — every implemented feature must update the matching doc.
 
-Índice: [`docs/README.md`](docs/README.md)
+Index: [`docs/README.md`](docs/README.md)
 
-| Tipo | Local | Quando atualizar |
-|------|-------|------------------|
-| Trilha de aprendizado | `docs/learn/01–07` | Novo fluxo ou conceito |
-| Deep dives | `docs/architecture.md`, `mcp.md`, `rag.md`, … | Mudança de contrato ou arquitetura |
-| ADRs | `docs/adrs/` | Decisão irreversível ou alternativa rejeitada |
-| Diagramas | **Mermaid** inline nos `.md` | Sempre que o fluxo mudar |
+| Type | Location | When to update |
+|------|----------|----------------|
+| Learning path | `docs/learn/01–07` | New flow or concept |
+| Deep dives | `docs/architecture.md`, `mcp.md`, `rag.md`, … | Contract or architecture change |
+| ADRs | `docs/adrs/` | Irreversible decision or rejected alternative |
+| Diagrams | **Mermaid** inline in `.md` | Whenever the flow changes |
 
-**Skills para docs:** `design-doc-mermaid`, `documentation-and-adrs`
+**Doc skills:** `design-doc-mermaid`, `documentation-and-adrs`
 
-**Regras Mermaid:** preferir `flowchart` e `sequenceDiagram`; evitar `block-beta`.
+**Mermaid rules:** prefer `flowchart` and `sequenceDiagram`; avoid `block-beta`.
 
-**Checklist pós-implementação:**
+**Post-implementation checklist:**
 
-1. Atualizar guia `learn/` + diagrama de sequência
-2. Atualizar deep dive se API ou módulo mudou
-3. Novo ADR se decisão arquitetural
-4. Nunca deixar doc contradizer código
+1. Update `learn/` guide + sequence diagram
+2. Update deep dive if API or module changed
+3. New ADR if architectural decision
+4. Never leave docs contradicting code
 
-Arquivos: `architecture.md`, `security.md`, `rag.md`, `mcp.md`, `observability.md`, `cost.md`, ADR-001…006.
+Files: `architecture.md`, `security.md`, `rag.md`, `mcp.md`, `observability.md`, `cost.md`, ADR-001…006.
 
 ## Definition of Done
 
-Checklist completo: [`docs/PLAN.md` §51](docs/PLAN.md#51-definition-of-done).
+Full checklist: [`docs/PLAN.md` §51](docs/PLAN.md#51-definition-of-done).
