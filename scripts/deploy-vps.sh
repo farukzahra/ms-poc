@@ -40,10 +40,16 @@ deploy_stack() {
 }
 
 health_check() {
-  sleep 10
-  curl -fsS "http://127.0.0.1:${WEB_PORT}/" | grep -q "Enterprise AI Sales Intelligence"
-  curl -fsS "http://127.0.0.1:${WEB_PORT}/api/health" | grep -q '"status":"ok"'
-  echo "OK: ms-poc on 127.0.0.1:${WEB_PORT}"
+  for i in 1 2 3 4 5 6; do
+    if curl -fsS "http://127.0.0.1:${WEB_PORT}/api/health" | grep -q '"status":"ok"'; then
+      curl -fsS "http://127.0.0.1:${WEB_PORT}/" | grep -q "Enterprise AI Sales Intelligence"
+      echo "OK: ms-poc on 127.0.0.1:${WEB_PORT}"
+      return 0
+    fi
+    sleep 10
+  done
+  echo "Health check failed after 60s" >&2
+  exit 1
 }
 
 sync_repo
