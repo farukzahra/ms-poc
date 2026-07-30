@@ -78,13 +78,27 @@ If upstream is not set:
 git push -u origin HEAD
 ```
 
-## Step 7 — Confirm
+## Step 7 — Verify GitHub Actions (mandatory when CI exists)
+
+If the repo has `.github/workflows/` (especially deploy):
+
+1. Poll the workflow for the pushed commit — `gh run list` or GitHub API:
+   `GET /repos/{owner}/{repo}/actions/runs?per_page=1`
+2. Confirm **test** and **deploy** jobs (or equivalent) finished with `conclusion: success`.
+3. If deploy exists, validate production — HTTP 200 on the documented URL (e.g. `/api/health` and page title).
+4. On failure: read job logs, fix, commit, push, and re-verify — **do not** report `/commit-push` as done while CI/deploy is red.
+
+Credentials: PAT in `C:\repo\financeiro\planos\vps-secrets\github-pat.txt` (line starting with `ghp_`); VPS secrets per `docs/deploy-vps.md`.
+
+## Step 8 — Confirm
 
 Report to the user:
 
 - Commit SHA(s) and message(s)
 - Branch pushed
 - New version from `release-history.json` if bumped
+- **GitHub Actions run URL + status** (test/deploy)
+- **Production URL** health check when deploy workflow exists
 - Remote URL if useful
 
 ## Failures
@@ -92,3 +106,4 @@ Report to the user:
 - Pre-commit hook failed → fix issues, **new commit** (never amend a failed hook commit unless user rules allow)
 - Push rejected → report error; do not force-push
 - No remote → tell user to add `origin`
+- **CI/deploy failed** → fix and re-push before closing `/commit-push`

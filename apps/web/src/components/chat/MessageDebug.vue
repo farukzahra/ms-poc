@@ -19,7 +19,7 @@ function kindLabel(kind: DebugStep["kind"]): string {
     case "synthesis":
       return "LLM";
     default:
-      return kind.toUpperCase();
+      return String(kind).toUpperCase();
   }
 }
 
