@@ -8,7 +8,7 @@
       "title": "Briefing estruturado FACT vs recomendações",
       "summary": "O chat separa facts e recomendações do LLM em seções distintas, interpreta listas numeradas e exibe o pipeline de debug passo a passo. O agente usa limite maior de tokens de conclusão e prompt de resposta mais rígido.",
       "type": "feat",
-      "commit": null
+      "commit": "187744e"
     },
     {
       "version": "0.2.0",
