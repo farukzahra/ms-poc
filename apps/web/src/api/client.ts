@@ -20,7 +20,18 @@ export interface LlmDebugInfo {
   note: string;
 }
 
+export interface DebugStep {
+  id: string;
+  kind: "mcp" | "rag" | "llm" | "synthesis";
+  title: string;
+  inputSummary: string;
+  outputSummary: string;
+  durationMs?: number;
+  raw?: Record<string, unknown>;
+}
+
 export interface ResponseDebug {
+  steps: DebugStep[];
   pipeline: string[];
   mcpCalls: ToolCallDebug[];
   ragCalls: ToolCallDebug[];

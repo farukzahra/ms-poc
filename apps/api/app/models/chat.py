@@ -55,12 +55,33 @@ class LlmDebugInfo(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class DebugStep(BaseModel):
+    """One ordered step in the agent reasoning pipeline."""
+
+    id: str
+    kind: str = Field(description="Step type: mcp, rag, llm, or synthesis")
+    title: str
+    input_summary: str = Field(default="", alias="inputSummary")
+    output_summary: str = Field(default="", alias="outputSummary")
+    duration_ms: float | None = Field(default=None, alias="durationMs")
+    raw: dict | None = Field(
+        default=None,
+        description="Optional raw payload for expanded inspection",
+    )
+
+    model_config = {"populate_by_name": True}
+
+
 class ResponseDebug(BaseModel):
     """Structured provenance for a chat response (MCP vs RAG vs LLM)."""
 
+    steps: list[DebugStep] = Field(
+        default_factory=list,
+        description="Ordered narrative steps for the reasoning pipeline",
+    )
     pipeline: list[str] = Field(
         default_factory=list,
-        description="Ordered steps, e.g. mcp:get_customer → llm:synthesis",
+        description="Legacy ordered step ids, e.g. mcp:get_customer → llm:synthesis",
     )
     mcp_calls: list[ToolCallDebug] = Field(default_factory=list, alias="mcpCalls")
     rag_calls: list[ToolCallDebug] = Field(default_factory=list, alias="ragCalls")

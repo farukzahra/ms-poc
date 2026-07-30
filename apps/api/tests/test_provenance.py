@@ -43,6 +43,13 @@ def test_build_response_debug_mcp_rag_llm_pipeline():
         "rag:search_knowledge",
         "llm:synthesis",
     ]
+    assert len(debug.steps) == 4
+    assert debug.steps[0].kind == "mcp"
+    assert debug.steps[0].title == "Called MCP tool: get_customer"
+    assert "ACME Corporation" in debug.steps[0].output_summary
+    assert debug.steps[2].kind == "rag"
+    assert debug.steps[3].kind == "llm"
+    assert "prompt token" in debug.steps[3].input_summary.lower()
     assert len(debug.mcp_calls) == 2
     assert debug.mcp_calls[0].source == "mcp"
     assert debug.mcp_calls[0].tool == "get_customer"

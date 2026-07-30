@@ -94,6 +94,8 @@ flowchart LR
 
 - [x] Upload script + sync on startup + re-ingest to Search
 
+**Ingestion details** (when it runs, where data persists, local fallback): [03 — Request Flow § Document ingestion](03-request-flow.md#document-ingestion-rag-pipeline) and [05 — Azure Services § RAG ingestion lifecycle](05-azure-services.md#rag-ingestion-lifecycle).
+
 ## Phase 5 — Azure Container Apps ✅
 
 **Deploy:** FastAPI container, Bicep modules, `/health` for probes

@@ -5,7 +5,7 @@ import logging
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatPromptExecutionSettings
 
 from app.agent.plugins.mcp_plugin import McpPlugin
 from app.agent.plugins.rag_plugin import RagPlugin
@@ -82,7 +82,13 @@ class SemanticKernelSalesAgent:
 
         with AgentTracer(conversation_id=conversation_id) as tracer:
             tracer.start_span("agent_execution")
-            response = await self.agent.get_response(messages=message)
+            execution_settings = OpenAIChatPromptExecutionSettings(
+                max_completion_tokens=4096,
+            )
+            response = await self.agent.get_response(
+                messages=message,
+                settings=execution_settings,
+            )
             tracer.end_span("agent_execution")
 
             message_content = response.message

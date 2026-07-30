@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
-
-export interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
+import type { ChatMessage } from "../../composables/useChat";
+import MessageDebug from "./MessageDebug.vue";
+import {
+  factGridItems,
+  parseBriefing,
+  splitRecommendationBullet,
+  type BriefingBlock,
+} from "./parseBriefing";
 
 const props = defineProps<{
   messages: ChatMessage[];
@@ -12,39 +15,16 @@ const props = defineProps<{
   error: string;
 }>();
 
-interface ContentBlock {
-  kind: "heading" | "fact" | "recommendation" | "text";
-  text: string;
-}
-
-function parseContent(content: string): ContentBlock[] {
-  const blocks: ContentBlock[] = [];
-  for (const rawLine of content.split("\n")) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    if (line.startsWith("# ")) {
-      blocks.push({ kind: "heading", text: line.slice(2) });
-    } else if (
-      line.includes("## FACT") ||
-      (line.startsWith("- ") && !line.startsWith("- **"))
-    ) {
-      blocks.push({ kind: "fact", text: line.replace(/^## FACT\s*/i, "").replace(/^-\s*/, "") });
-    } else if (line.includes("## RECOMMENDATION") || line.startsWith("- **")) {
-      blocks.push({
-        kind: "recommendation",
-        text: line.replace(/^## RECOMMENDATION\s*/i, "").replace(/^-\s*\*\*/, "").replace(/\*\*$/, ""),
-      });
-    } else {
-      blocks.push({ kind: "text", text: line });
-    }
-  }
-  return blocks;
+function isFactGrid(blocks: BriefingBlock[]): boolean {
+  const bullets = blocks.filter((block) => block.kind === "bullet");
+  if (bullets.length === 0) return false;
+  return factGridItems(blocks).length === bullets.length;
 }
 
 const parsedMessages = computed(() =>
   props.messages.map((message) => ({
     ...message,
-    blocks: message.role === "assistant" ? parseContent(message.content) : null,
+    parsed: message.role === "assistant" ? parseBriefing(message.content) : null,
   })),
 );
 </script>
@@ -68,19 +48,92 @@ const parsedMessages = computed(() =>
         {{ message.content }}
       </div>
 
-      <div v-else class="message__body message__body--structured">
-        <template v-for="(block, blockIndex) in message.blocks" :key="blockIndex">
-          <h3 v-if="block.kind === 'heading'" class="block-heading">{{ block.text }}</h3>
-          <p v-else-if="block.kind === 'fact'" class="block-fact">
-            <span class="block-label">Fact</span>
-            {{ block.text }}
-          </p>
-          <p v-else-if="block.kind === 'recommendation'" class="block-rec">
-            <span class="block-label">Recommendation</span>
-            {{ block.text }}
-          </p>
-          <p v-else class="block-text">{{ block.text }}</p>
-        </template>
+      <div
+        v-else-if="message.parsed?.hasStructure"
+        class="message__body message__body--structured"
+      >
+        <h3 v-if="message.parsed.title" class="briefing-title">
+          {{ message.parsed.title }}
+        </h3>
+
+        <section v-if="message.parsed.facts" class="briefing-section briefing-section--facts">
+          <header class="briefing-section__header">
+            <h4 class="briefing-section__title">Facts</h4>
+            <span class="briefing-section__source">CRM · Sales · Tickets · Documents</span>
+          </header>
+
+          <dl
+            v-if="isFactGrid(message.parsed.facts.blocks)"
+            class="fact-grid"
+          >
+            <template
+              v-for="item in factGridItems(message.parsed.facts.blocks)"
+              :key="item.label + item.value"
+            >
+              <dt>{{ item.label }}</dt>
+              <dd>{{ item.value }}</dd>
+            </template>
+          </dl>
+
+          <div v-else class="section-body">
+            <template v-for="(block, blockIndex) in message.parsed.facts.blocks" :key="blockIndex">
+              <h5 v-if="block.kind === 'subheading'" class="block-subheading">{{ block.text }}</h5>
+              <p v-else-if="block.kind === 'text'" class="block-text">{{ block.text }}</p>
+              <ul v-else-if="block.kind === 'bullet'" class="block-list">
+                <li>{{ block.text }}</li>
+              </ul>
+              <ol
+                v-else-if="block.kind === 'numbered'"
+                class="block-list block-list--numbered"
+                :start="block.order"
+              >
+                <li>{{ block.text }}</li>
+              </ol>
+            </template>
+          </div>
+        </section>
+
+        <section
+          v-if="message.parsed.recommendations"
+          class="briefing-section briefing-section--rec"
+        >
+          <header class="briefing-section__header">
+            <h4 class="briefing-section__title">AI Recommendations</h4>
+            <span class="briefing-section__source">Suggested next steps · review before acting</span>
+          </header>
+
+          <div class="section-body">
+            <template
+              v-for="(block, blockIndex) in message.parsed.recommendations.blocks"
+              :key="blockIndex"
+            >
+              <h5 v-if="block.kind === 'subheading'" class="block-subheading block-subheading--rec">
+                {{ block.text }}
+              </h5>
+              <p v-else-if="block.kind === 'text'" class="block-text block-text--rec">{{ block.text }}</p>
+              <div
+                v-else-if="block.kind === 'bullet'"
+                class="rec-item"
+              >
+                <strong v-if="splitRecommendationBullet(block.text).title">
+                  {{ splitRecommendationBullet(block.text).title }}
+                </strong>
+                <p>{{ splitRecommendationBullet(block.text).detail || block.text }}</p>
+              </div>
+              <div v-else-if="block.kind === 'numbered'" class="rec-item rec-item--numbered">
+                <span class="rec-item__index">{{ block.order }}</span>
+                <p>{{ block.text }}</p>
+              </div>
+            </template>
+          </div>
+        </section>
+
+        <MessageDebug v-if="message.debug?.steps?.length" :debug="message.debug" />
+      </div>
+
+      <div v-else class="message__body message__body--plain">
+        <pre class="message__raw">{{ message.content }}</pre>
+        <MessageDebug v-if="message.debug?.steps?.length" :debug="message.debug" />
       </div>
     </article>
 
@@ -113,29 +166,23 @@ const parsedMessages = computed(() =>
 }
 
 .message {
-  max-width: 52ch;
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--lumen-rule);
   border-radius: var(--radius-md);
   background: var(--lumen-panel);
-  transition:
-    transform var(--dur-short) var(--ease-out),
-    border-color var(--dur-short) var(--ease-out);
 }
 
 .message.user {
   align-self: flex-end;
+  max-width: min(52ch, 88%);
   border-color: oklch(76% 0.17 50 / 0.25);
   background: oklch(17% 0.016 265 / 0.85);
 }
 
 .message.assistant {
-  align-self: flex-start;
-  max-width: min(52ch, 100%);
-}
-
-.message.assistant:hover {
-  border-color: oklch(76% 0.17 50 / 0.2);
+  align-self: stretch;
+  width: 100%;
+  max-width: 100%;
 }
 
 .message__meta {
@@ -163,41 +210,194 @@ const parsedMessages = computed(() =>
   min-width: 0;
 }
 
-.block-heading {
-  margin: 0 0 var(--space-xs);
+.message__body--structured {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: 100%;
+}
+
+.message__body--plain {
+  width: 100%;
+}
+
+.message__raw {
+  margin: 0;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--lumen-ink-2);
+}
+
+.briefing-title {
+  margin: 0;
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--lumen-rule);
   font-family: var(--lumen-font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   font-weight: 400;
-  font-style: normal;
   color: var(--lumen-ink);
 }
 
-.block-fact,
-.block-rec,
-.block-text {
-  margin: var(--space-2xs) 0;
+.briefing-section {
+  width: 100%;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
 }
 
-.block-label {
-  display: inline-block;
-  margin-right: var(--space-2xs);
-  padding: 2px var(--space-2xs);
-  border-radius: var(--radius-sm);
+.briefing-section--facts {
+  border: 1px solid oklch(76% 0.17 50 / 0.22);
+  background: oklch(76% 0.17 50 / 0.05);
+}
+
+.briefing-section--rec {
+  border: 1px solid oklch(68% 0.16 18 / 0.28);
+  border-left: 4px solid oklch(68% 0.16 18 / 0.75);
+  background: oklch(68% 0.16 18 / 0.07);
+  box-shadow: 0 0 0 1px oklch(68% 0.16 18 / 0.06);
+}
+
+.briefing-section__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2xs) var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.briefing-section__title {
+  margin: 0;
   font-family: var(--lumen-font-label);
-  font-size: calc(8px * var(--scale));
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-size: calc(11px * var(--scale));
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.block-fact .block-label {
-  background: oklch(76% 0.17 50 / 0.12);
+.briefing-section--facts .briefing-section__title {
   color: var(--lumen-accent);
 }
 
-.block-rec .block-label {
-  background: oklch(68% 0.16 18 / 0.12);
+.briefing-section--rec .briefing-section__title {
   color: var(--lumen-error);
+}
+
+.briefing-section__source {
+  font-family: var(--lumen-font-label);
+  font-size: calc(8px * var(--scale));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lumen-ink-2);
+  opacity: 0.9;
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.fact-grid {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.85fr) minmax(0, 1.5fr);
+  gap: var(--space-xs) var(--space-md);
+  margin: 0;
+  width: 100%;
+}
+
+.fact-grid dt {
+  margin: 0;
+  font-family: var(--lumen-font-label);
+  font-size: calc(9px * var(--scale));
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lumen-accent);
+}
+
+.fact-grid dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--lumen-ink);
+}
+
+.block-subheading {
+  margin: var(--space-xs) 0 0;
+  font-family: var(--lumen-font-display);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--lumen-ink);
+}
+
+.block-subheading--rec {
+  color: var(--lumen-error);
+  opacity: 0.95;
+}
+
+.block-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--lumen-ink-2);
+}
+
+.block-text--rec {
+  color: var(--lumen-ink);
+}
+
+.block-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: var(--text-sm);
+  color: var(--lumen-ink);
+}
+
+.rec-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: oklch(9% 0.01 265 / 0.35);
+  border: 1px solid oklch(68% 0.16 18 / 0.15);
+}
+
+.rec-item strong {
+  font-family: var(--lumen-font-display);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--lumen-ink);
+}
+
+.rec-item p {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--lumen-ink-2);
+}
+
+.rec-item--numbered {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.rec-item__index {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: oklch(68% 0.16 18 / 0.18);
+  color: var(--lumen-error);
+  font-family: var(--lumen-font-label);
+  font-size: calc(9px * var(--scale));
+  font-weight: 600;
 }
 
 .message-list__loading {
@@ -214,5 +414,11 @@ const parsedMessages = computed(() =>
   background: oklch(68% 0.16 18 / 0.08);
   color: var(--lumen-error);
   font-size: var(--text-sm);
+}
+
+@media (max-width: 520px) {
+  .fact-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

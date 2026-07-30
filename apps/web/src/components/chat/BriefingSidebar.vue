@@ -8,74 +8,13 @@ defineProps<{
 
 <template>
   <aside v-if="latest" class="briefing-sidebar">
-    <section v-if="latest.debug" class="panel provenance" data-testid="provenance">
-      <h2>Data provenance</h2>
+    <section class="panel panel--legend">
+      <h2>Briefing</h2>
       <p class="panel__note">
-        FACT lines come from MCP (CRM, sales, tickets) and RAG (documents).
-        RECOMMENDATION is synthesized by the LLM.
+        <span class="badge badge--fact">Fact</span> verified tool/document data ·
+        <span class="badge badge--rec">AI recommendation</span> LLM-suggested actions.
+        Use <strong>Debug</strong> under agent messages for the pipeline.
       </p>
-
-      <div v-if="latest.debug.pipeline.length" class="pipeline">
-        <span class="pipeline__label">Pipeline</span>
-        <code>{{ latest.debug.pipeline.join(" → ") }}</code>
-      </div>
-
-      <div v-if="latest.debug.mcpCalls.length" class="call-group">
-        <h3>
-          <span class="badge badge--mcp">MCP</span>
-          Structured data
-        </h3>
-        <article
-          v-for="call in latest.debug.mcpCalls"
-          :key="call.tool + JSON.stringify(call.arguments)"
-          class="call"
-        >
-          <header class="call__header">
-            <strong>{{ call.tool }}</strong>
-            <span v-if="call.durationMs">{{ call.durationMs }} ms</span>
-          </header>
-          <p v-if="Object.keys(call.arguments).length" class="call__args">
-            {{ JSON.stringify(call.arguments) }}
-          </p>
-          <pre v-if="call.resultPreview" class="call__preview">{{ call.resultPreview }}</pre>
-        </article>
-      </div>
-
-      <div v-if="latest.debug.ragCalls.length" class="call-group">
-        <h3>
-          <span class="badge badge--rag">RAG</span>
-          Document retrieval
-        </h3>
-        <article
-          v-for="call in latest.debug.ragCalls"
-          :key="call.tool + call.arguments.query"
-          class="call"
-        >
-          <header class="call__header">
-            <strong>{{ call.tool }}</strong>
-            <span v-if="call.durationMs">{{ call.durationMs }} ms</span>
-          </header>
-          <p v-if="Object.keys(call.arguments).length" class="call__args">
-            {{ JSON.stringify(call.arguments) }}
-          </p>
-          <pre v-if="call.resultPreview" class="call__preview">{{ call.resultPreview }}</pre>
-        </article>
-      </div>
-
-      <div v-if="latest.debug.llm" class="call-group">
-        <h3>
-          <span class="badge badge--llm">LLM</span>
-          Synthesis
-        </h3>
-        <article class="call">
-          <p><strong>Model:</strong> {{ latest.debug.llm.model }}</p>
-          <p>
-            Tokens: {{ latest.debug.llm.promptTokens }} prompt /
-            {{ latest.debug.llm.completionTokens }} completion
-          </p>
-          <p class="call__note">{{ latest.debug.llm.note }}</p>
-        </article>
-      </div>
     </section>
 
     <section v-if="latest.toolsUsed.length" class="panel">
@@ -86,9 +25,9 @@ defineProps<{
     </section>
 
     <section v-if="latest.sources.length" class="panel">
-      <h2>Sources</h2>
+      <h2>Document sources</h2>
       <ul class="source-list">
-        <li v-for="source in latest.sources" :key="source.source">
+        <li v-for="source in latest.sources" :key="source.source" class="source-card">
           <strong>{{ source.title }}</strong>
           <span class="source-path">{{ source.source }}</span>
           <p v-if="source.snippet">{{ source.snippet }}</p>
@@ -96,8 +35,11 @@ defineProps<{
       </ul>
     </section>
 
-    <section v-if="latest.facts?.length" class="panel">
-      <h2>Facts</h2>
+    <section v-if="latest.facts?.length" class="panel panel--facts">
+      <header class="panel__header">
+        <h2>Facts</h2>
+        <span class="badge badge--fact">Verified data</span>
+      </header>
       <dl class="fact-grid">
         <template v-for="fact in latest.facts" :key="fact.label">
           <dt>{{ fact.label }}</dt>
@@ -106,10 +48,13 @@ defineProps<{
       </dl>
     </section>
 
-    <section v-if="latest.recommendations?.length" class="panel">
-      <h2>Recommendations</h2>
+    <section v-if="latest.recommendations?.length" class="panel panel--rec">
+      <header class="panel__header">
+        <h2>Recommendations</h2>
+        <span class="badge badge--rec">LLM guidance</span>
+      </header>
       <ul class="rec-list">
-        <li v-for="item in latest.recommendations" :key="item.title">
+        <li v-for="item in latest.recommendations" :key="item.title" class="rec-card">
           <strong>{{ item.title }}</strong>
           <span>{{ item.detail }}</span>
         </li>
@@ -118,7 +63,9 @@ defineProps<{
   </aside>
 
   <aside v-else class="briefing-sidebar briefing-sidebar--empty">
-    <p>Briefing metadata, sources, and provenance appear here after the first response.</p>
+    <p>
+      After your first response, verified facts, document sources, and recommendations appear here.
+    </p>
   </aside>
 </template>
 
@@ -147,6 +94,7 @@ defineProps<{
 }
 
 .panel {
+  width: 100%;
   margin-bottom: calc(18px * var(--scale));
   padding-bottom: calc(18px * var(--scale));
   border-bottom: calc(1px * var(--scale)) solid var(--lumen-rule);
@@ -158,8 +106,33 @@ defineProps<{
   padding-bottom: 0;
 }
 
+.panel--legend {
+  padding: var(--space-sm);
+  border: 1px solid var(--lumen-rule);
+  border-radius: var(--radius-sm);
+  background: oklch(11% 0.012 265 / 0.55);
+}
+
+.panel--facts {
+  border-left: 3px solid oklch(76% 0.17 50 / 0.45);
+  padding-left: var(--space-sm);
+}
+
+.panel--rec {
+  border-left: 3px solid oklch(68% 0.16 18 / 0.45);
+  padding-left: var(--space-sm);
+}
+
+.panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-bottom: var(--space-xs);
+}
+
 .panel h2 {
-  margin: 0 0 var(--space-xs);
+  margin: 0;
   font-family: var(--lumen-font-label);
   font-size: calc(10px * var(--scale));
   font-weight: 500;
@@ -170,53 +143,10 @@ defineProps<{
 }
 
 .panel__note {
-  margin: 0 0 var(--space-sm);
+  margin: var(--space-xs) 0 0;
   font-size: var(--text-xs);
   line-height: 1.5;
   color: var(--lumen-ink-2);
-}
-
-.pipeline {
-  margin-bottom: var(--space-sm);
-}
-
-.pipeline__label {
-  display: block;
-  font-family: var(--lumen-font-label);
-  font-size: calc(9px * var(--scale));
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--lumen-accent);
-  margin-bottom: var(--space-2xs);
-}
-
-.pipeline code {
-  display: block;
-  padding: var(--space-2xs) var(--space-xs);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--lumen-rule);
-  background: oklch(13% 0.014 265 / 0.6);
-  font-family: var(--lumen-font-label);
-  font-size: calc(9px * var(--scale));
-  word-break: break-word;
-  color: var(--lumen-ink-2);
-}
-
-.call-group {
-  margin-top: var(--space-sm);
-}
-
-.call-group h3 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2xs);
-  margin: 0 0 var(--space-2xs);
-  font-family: var(--lumen-font-label);
-  font-size: calc(9px * var(--scale));
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--lumen-ink);
 }
 
 .badge {
@@ -225,67 +155,20 @@ defineProps<{
   border-radius: var(--radius-sm);
   font-family: var(--lumen-font-label);
   font-size: calc(8px * var(--scale));
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.badge--mcp {
-  background: oklch(76% 0.17 50 / 0.12);
+.badge--fact {
+  background: oklch(76% 0.17 50 / 0.14);
   color: var(--lumen-accent);
 }
 
-.badge--rag {
-  background: oklch(76% 0.17 50 / 0.08);
-  color: var(--lumen-accent);
-}
-
-.badge--llm {
-  background: oklch(68% 0.16 18 / 0.12);
+.badge--rec {
+  background: oklch(68% 0.16 18 / 0.14);
   color: var(--lumen-error);
-}
-
-.call {
-  margin-top: var(--space-2xs);
-  padding: var(--space-xs);
-  border: 1px solid var(--lumen-rule);
-  border-radius: var(--radius-sm);
-  background: oklch(13% 0.014 265 / 0.5);
-  font-size: var(--text-xs);
-  transition: border-color var(--dur-short) var(--ease-out);
-}
-
-.call:hover {
-  border-color: oklch(76% 0.17 50 / 0.25);
-}
-
-.call__header {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-2xs);
-  font-family: var(--lumen-font-label);
-  color: var(--lumen-accent);
-}
-
-.call__args {
-  margin: var(--space-2xs) 0 0;
-  color: var(--lumen-ink-2);
-  word-break: break-word;
-}
-
-.call__preview {
-  margin: var(--space-2xs) 0 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: var(--lumen-font-label);
-  font-size: calc(8px * var(--scale));
-  color: var(--lumen-ink-2);
-}
-
-.call__note {
-  margin: var(--space-2xs) 0 0;
-  color: var(--lumen-ink-2);
-  line-height: 1.45;
 }
 
 .chip-list {
@@ -315,20 +198,32 @@ defineProps<{
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  width: 100%;
 }
 
-.source-list li,
-.rec-list li {
+.source-card,
+.rec-card {
+  padding: var(--space-xs);
+  border: 1px solid var(--lumen-rule);
+  border-radius: var(--radius-sm);
+  background: oklch(13% 0.014 265 / 0.5);
   font-size: var(--text-xs);
   line-height: 1.45;
   color: var(--lumen-ink-2);
 }
 
+.rec-card {
+  border-color: oklch(68% 0.16 18 / 0.2);
+  background: oklch(68% 0.16 18 / 0.06);
+}
+
 .source-list strong,
 .rec-list strong {
+  display: block;
   font-family: var(--lumen-font-display);
   font-weight: 400;
   color: var(--lumen-ink);
+  margin-bottom: 2px;
 }
 
 .source-path {
@@ -337,6 +232,7 @@ defineProps<{
   color: var(--lumen-accent);
   margin-top: 2px;
   font-size: calc(9px * var(--scale));
+  word-break: break-word;
 }
 
 .fact-grid {
@@ -344,6 +240,7 @@ defineProps<{
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   gap: var(--space-2xs) var(--space-xs);
   margin: 0;
+  width: 100%;
   font-size: var(--text-xs);
 }
 

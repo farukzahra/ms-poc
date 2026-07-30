@@ -89,8 +89,8 @@ AZURE_EMBEDDING_DEPLOYMENT=
 | `content` | string | Chunk text |
 | `title` | string | Document title |
 | `document_type` | string | policy, contract, product |
-| `customer_id` | string | Filtro ACME-001 |
-| `department` | string | Filtro org |
+| `customer_id` | string | Filter e.g. ACME-001 |
+| `department` | string | Org filter |
 | `source` | string | Source file name |
 | `created_at` | datetime | Sort order |
 | `content_vector` | vector | Dim = embedding model |
@@ -108,6 +108,32 @@ flowchart TD
     classDef search fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
     class Hybrid,Rank search
 ```
+
+### RAG ingestion lifecycle
+
+Ingestion is separate from chat. It **writes** the index; chat **reads** it.
+
+```mermaid
+flowchart LR
+    Data[data/*.md] -->|upload optional| Blob[(Blob documents/)]
+    Blob -->|sync on startup| Local[data/ mirror]
+    Local -->|chunk + embed| Ingest[ingest pipeline]
+    Ingest --> Search[(AI Search index)]
+    Chat[Chat request] -->|search only| Search
+
+    classDef store fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    class Blob,Search store
+```
+
+| Question | Answer |
+|----------|--------|
+| Was RAG run once? | Yes for the POC bootstrap — demo files were ingested into `enterprise-knowledge`. |
+| Is data only in memory? | **No** — chunks and vectors persist in Azure AI Search; sources live in Blob. |
+| Must I re-run ingest? | Only when documents change, or to refresh after Blob updates. API startup re-ingests automatically when Azure env vars are set. |
+| How to run manually? | `python -m app.rag.ingest` or `make ingest` from repo root (API container / local venv). |
+| How to confirm? | `GET /ready` → `"rag": "azure"`. |
+
+Implementation: `apps/api/app/rag/ingest.py`, `apps/api/app/storage/blob.py` (`sync_and_ingest`), startup hook in `apps/api/app/main.py`.
 
 ## Azure Blob Storage
 

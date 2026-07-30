@@ -1,12 +1,18 @@
 import { ref } from "vue";
-import { sendChat, type ChatResponse } from "../api/client";
+import { sendChat, type ChatResponse, type ResponseDebug } from "../api/client";
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  debug?: ResponseDebug;
+}
 
 export function useChat() {
   const conversationId = crypto.randomUUID();
   const input = ref("");
   const loading = ref(false);
   const error = ref("");
-  const messages = ref<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const messages = ref<ChatMessage[]>([]);
   const latest = ref<ChatResponse | null>(null);
 
   async function submit() {
@@ -23,7 +29,11 @@ export function useChat() {
         AbortSignal.timeout(120_000),
       );
       latest.value = response;
-      messages.value.push({ role: "assistant", content: response.answer });
+      messages.value.push({
+        role: "assistant",
+        content: response.answer,
+        debug: response.debug,
+      });
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Unknown error";
     } finally {

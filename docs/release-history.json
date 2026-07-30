@@ -1,7 +1,15 @@
 {
-  "currentVersion": "0.2.0",
-  "updatedAt": "2026-07-30T18:35:00.000Z",
+  "currentVersion": "0.3.0",
+  "updatedAt": "2026-07-30T20:30:00.000Z",
   "entries": [
+    {
+      "version": "0.3.0",
+      "date": "2026-07-30",
+      "title": "Briefing estruturado FACT vs recomendações",
+      "summary": "O chat separa facts e recomendações do LLM em seções distintas, interpreta listas numeradas e exibe o pipeline de debug passo a passo. O agente usa limite maior de tokens de conclusão e prompt de resposta mais rígido.",
+      "type": "feat",
+      "commit": null
+    },
     {
       "version": "0.2.0",
       "date": "2026-07-30",

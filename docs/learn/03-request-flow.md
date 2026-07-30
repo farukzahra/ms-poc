@@ -182,22 +182,72 @@ flowchart TD
 
 ## Document ingestion (RAG pipeline)
 
-Offline flow — command `python -m app.rag.ingest`:
+Ingestion is **offline** — it does not run on every chat request. At query time the agent only **searches** the index that ingestion already built.
+
+### Where knowledge is stored (Azure)
+
+After a successful ingest, demo documents live in two Azure services:
+
+| Layer | Service | POC artifact |
+|-------|---------|--------------|
+| Source of truth | Azure Blob Storage | container `documents/` (markdown from `data/`) |
+| Retrieval index | Azure AI Search | index `enterprise-knowledge` (chunks + vectors) |
+
+The demo dataset is **4 markdown files** under `data/` (ACME contract, renewal policy, enterprise AI policy, analytics product sheet). Ingestion splits each file into chunks (`CHUNK_SIZE=800`, `CHUNK_OVERLAP=120`), embeds them with Azure OpenAI, and upserts into Search.
+
+**This is not a one-time-only job.** Initial ingest loads Azure; later runs refresh the index when documents change.
+
+### When ingestion runs
+
+Two triggers call the same pipeline (`apps/api/app/rag/ingest.py`):
+
+| Trigger | How | When to use |
+|---------|-----|-------------|
+| **Manual** | `python -m app.rag.ingest` or `make ingest` | After editing files in `data/`, or first-time bootstrap |
+| **API startup** | `sync_and_ingest()` in `main.py` | Every time the API container starts with Azure configured |
+
+Startup path (`apps/api/app/storage/blob.py`):
+
+1. Download `.md` files from Blob → local `data/` mirror
+2. Chunk, embed, upsert → Azure AI Search
+
+Manual ingest reads directly from `data/` (or uploads to Blob first via upload scripts in Phase 4).
 
 ```mermaid
 flowchart TD
-    Start([🚀 ingest command]) --> Load[📂 Load from Blob / data/]
-    Load --> Extract[📄 Text extraction<br/>MD TXT PDF JSON]
-    Extract --> Chunk[✂️ Chunking<br/>size=800 overlap=120]
-    Chunk --> Meta[🏷️ Metadata extraction<br/>customer_id, document_type]
-    Meta --> Embed[🧮 Embedding via Azure OpenAI]
-    Embed --> Index[(📊 Azure AI Search index)]
-    Index --> Done([✅ Done])
+    subgraph triggers["Ingest triggers"]
+        Manual([Manual: python -m app.rag.ingest])
+        Startup([API startup: sync_and_ingest])
+    end
+
+    Manual --> Load
+    Startup --> Sync[Sync Blob → local data/]
+    Sync --> Load[Load markdown from data/]
+
+    Load --> Chunk[Chunk size=800 overlap=120]
+    Chunk --> Meta[Metadata: customer_id, source, title]
+    Meta --> Embed[Embed via Azure OpenAI]
+    Embed --> Index[(Azure AI Search<br/>enterprise-knowledge)]
+    Index --> Done([Index ready for chat RAG])
 
     classDef step fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
-    class Load,Extract,Chunk,Meta,Embed step
+    class Load,Chunk,Meta,Embed,Sync step
     class Index fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
 ```
+
+### Local fallback (no Azure)
+
+If `AZURE_SEARCH_*` or embedding settings are missing, `python -m app.rag.ingest` loads chunks into the **local in-memory store** only. At runtime `KnowledgeRetriever` tries Azure Search first, then falls back to local keyword scoring.
+
+### Verify RAG is on Azure
+
+```bash
+curl http://localhost:8000/ready
+```
+
+Expect `"rag": "azure"` when Search is configured and reachable. `"rag": "local"` means the API is using the fallback path.
+
+See also [05 — Azure Services](05-azure-services.md#rag-ingestion-lifecycle) and [rag.md](../rag.md).
 
 ## Telemetry per request (Phase 6)
 

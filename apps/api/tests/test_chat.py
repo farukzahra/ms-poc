@@ -104,3 +104,5 @@ async def test_chat_acme_briefing(monkeypatch):
     assert "get_customer_sales" in body["toolsUsed"]
     assert body["debug"]["mcpCalls"][0]["tool"] == "get_customer"
     assert "llm:synthesis" in body["debug"]["pipeline"]
+    assert len(body["debug"]["steps"]) >= 2
+    assert body["debug"]["steps"][0]["kind"] == "mcp"
