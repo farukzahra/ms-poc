@@ -116,7 +116,7 @@ flowchart TD
 flowchart LR
     subgraph Local["🐳 docker compose up"]
         direction TB
-        L1[Vue :5173]
+        L1[Vue :5200]
         L2[FastAPI :8000]
         L3[MCP :8001]
         L4[Mocks :810x]
@@ -143,7 +143,7 @@ flowchart LR
 
 | Service | Port | Health endpoint |
 |---------|------|-----------------|
-| Vue | 5173 | home page |
+| Vue | 5200 (host; 5173 in container) | home page |
 | FastAPI | 8000 | `GET /health`, `GET /ready` |
 | MCP Server | 8001 | per transport |
 | Mock CRM | 8101 | `GET /health` |

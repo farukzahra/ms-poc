@@ -1,56 +1,22 @@
 from __future__ import annotations
 
 import logging
-import re
 from pathlib import Path
 
-from demo_data.store import DEMO_STORE
+from fastapi import HTTPException
 
-from app.agent.plugins.mcp_plugin import McpPlugin
-from app.agent.plugins.rag_plugin import RagPlugin
-from app.agent.response_builder import recommendations_from_context
+from app.agent.sk_agent import SemanticKernelSalesAgent
 from app.config import settings
 from app.mcp.client import McpClient
-from app.models.chat import ChatResponse, FactItem, RecommendationItem, SourceItem
+from app.models.chat import ChatResponse
 from app.rag.retriever import KnowledgeRetriever
-from app.telemetry.tracer import AgentTracer
 
 logger = logging.getLogger(__name__)
 
-POLICY_KEYWORDS = (
-    "policy",
-    "policies",
-    "renewal",
-    "contract terms",
-    "documentation",
-    "according to",
-    "governance",
-    "deployment",
-)
-BRIEFING_KEYWORDS = ("prepare", "briefing", "meeting", "executive", "summary", "overview")
-SALES_KEYWORDS = ("revenue", "sales", "spend", "trend", "annual")
-TICKET_KEYWORDS = ("ticket", "support", "issue", "open")
-CONTRACT_KEYWORDS = ("contract", "renewal date", "renewal")
-PRODUCT_KEYWORDS = ("product", "catalog", "recommend", "upsell", "cross-sell")
-
-
-def _resolve_customer_id(message: str) -> str | None:
-    lowered = message.lower()
-    match = DEMO_STORE.customer_by_name_fragment(lowered)
-    return match.id if match else None
-
-
-def _needs_rag(message: str) -> bool:
-    lowered = message.lower()
-    return any(keyword in lowered for keyword in POLICY_KEYWORDS)
-
-
-def _needs_briefing(message: str) -> bool:
-    lowered = message.lower()
-    return any(keyword in lowered for keyword in BRIEFING_KEYWORDS)
-
 
 class SalesAgentOrchestrator:
+    """Thin facade — all chat intelligence is delegated to the Semantic Kernel LLM agent."""
+
     def __init__(
         self,
         mcp_client: McpClient | None = None,
@@ -67,224 +33,23 @@ class SalesAgentOrchestrator:
         return "You are an enterprise sales intelligence agent."
 
     async def handle(self, conversation_id: str, message: str) -> ChatResponse:
-        if settings.azure_openai_configured:
-            try:
-                from app.agent.sk_agent import SemanticKernelSalesAgent
-
-                agent = SemanticKernelSalesAgent(self.mcp, self.retriever, self.system_prompt)
-                return await agent.handle(conversation_id, message)
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Semantic Kernel agent failed, using local orchestrator: %s", exc)
-
-        return await self._handle_local(conversation_id, message)
-
-    async def _handle_local(self, conversation_id: str, message: str) -> ChatResponse:
-        with AgentTracer(conversation_id=conversation_id):
-            return await self._handle_local_inner(conversation_id, message)
-
-    async def _handle_local_inner(self, conversation_id: str, message: str) -> ChatResponse:
-        customer_id = _resolve_customer_id(message)
-        tools_used: list[str] = []
-        facts: list[FactItem] = []
-        recommendations: list[RecommendationItem] = []
-        sources: list[SourceItem] = []
-
-        customer = None
-        sales = None
-        tickets = None
-        contracts = None
-
-        lowered = message.lower()
-
-        if customer_id and (
-            _needs_briefing(message)
-            or any(keyword in lowered for keyword in ("customer", "account", "who is"))
-            or not any(keyword in lowered for keyword in SALES_KEYWORDS + TICKET_KEYWORDS)
-        ):
-            customer = await self.mcp.call_tool("get_customer", {"customer_id": customer_id})
-            tools_used.append("get_customer")
-
-        if customer_id and (
-            _needs_briefing(message) or any(keyword in lowered for keyword in SALES_KEYWORDS)
-        ):
-            sales = await self.mcp.call_tool("get_customer_sales", {"customer_id": customer_id})
-            tools_used.append("get_customer_sales")
-
-        if customer_id and (
-            _needs_briefing(message) or any(keyword in lowered for keyword in TICKET_KEYWORDS)
-        ):
-            tickets = await self.mcp.call_tool(
-                "get_customer_tickets", {"customer_id": customer_id}
-            )
-            tools_used.append("get_customer_tickets")
-
-        if customer_id and (
-            _needs_briefing(message) or any(keyword in lowered for keyword in CONTRACT_KEYWORDS)
-        ):
-            contracts = await self.mcp.call_tool(
-                "get_customer_contracts", {"customer_id": customer_id}
-            )
-            tools_used.append("get_customer_contracts")
-
-        if any(keyword in lowered for keyword in PRODUCT_KEYWORDS):
-            query = "analytics" if "analytics" in lowered else "enterprise"
-            await self.mcp.call_tool("search_products", {"query": query})
-            tools_used.append("search_products")
-
-        rag_hits: list[dict[str, str]] = []
-        if _needs_rag(message) or _needs_briefing(message):
-            rag_hits = await self.retriever.search(message, customer_id=customer_id)
-            sources = [SourceItem(**item) for item in rag_hits]
-
-        if customer:
-            name = customer.get("name", customer.get("id", "Unknown"))
-            cid = customer.get("id", "")
-            facts.append(FactItem(label="Customer", value=f"{name} ({cid})"))
-            if "annualRevenue" in customer:
-                facts.append(
-                    FactItem(
-                        label="Annual revenue",
-                        value=f"${customer['annualRevenue']:,.0f}",
-                    )
-                )
-            if "revenueTrendPct" in customer:
-                facts.append(
-                    FactItem(
-                        label="Revenue trend",
-                        value=f"{customer['revenueTrendPct']:+.1f}%",
-                    )
-                )
-
-        if sales and "annualSpend2025" in sales:
-            facts.append(
-                FactItem(
-                    label="2025 annual spend",
-                    value=f"${sales['annualSpend2025']:,.0f}",
-                )
-            )
-        if sales and "annualSpend2024" in sales:
-            facts.append(
-                FactItem(
-                    label="2024 annual spend",
-                    value=f"${sales['annualSpend2024']:,.0f}",
-                )
+        if not settings.azure_openai_configured:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Azure OpenAI is not configured. Set AZURE_AI_ENDPOINT, "
+                    "AZURE_AI_API_KEY, and AZURE_CHAT_DEPLOYMENT in .env."
+                ),
             )
 
-        if tickets:
-            facts.append(
-                FactItem(label="Open tickets", value=str(tickets.get("openCount", 0)))
-            )
-
-        if contracts and contracts.get("contracts"):
-            primary = contracts["contracts"][0]
-            facts.append(
-                FactItem(
-                    label="Renewal",
-                    value=f"{primary['renewalDate']} ({primary['renewalDaysRemaining']} days)",
-                )
-            )
-
-        recommendations = recommendations_from_context(
-            {
-                "get_customer": customer,
-                "get_customer_sales": sales,
-                "get_customer_tickets": tickets,
-                "get_customer_contracts": contracts,
-            },
-            sources,
-        )
-
-        answer = self._compose_answer(
-            customer=customer,
-            sales=sales,
-            tickets=tickets,
-            contracts=contracts,
-            sources=sources,
-            facts=facts,
-            recommendations=recommendations,
-            message=message,
-        )
-
-        return ChatResponse(
-            conversationId=conversation_id,
-            answer=answer,
-            sources=sources,
-            toolsUsed=list(dict.fromkeys(tools_used)),
-            facts=facts,
-            recommendations=recommendations,
-        )
-
-    def _compose_answer(
-        self,
-        *,
-        customer: dict | None,
-        sales: dict | None,
-        tickets: dict | None,
-        contracts: dict | None,
-        sources: list[SourceItem],
-        facts: list[FactItem],
-        recommendations: list[RecommendationItem],
-        message: str,
-    ) -> str:
-        if not customer and not sources:
-            return (
-                "I could not identify a demo customer in your message. "
-                "Try asking about ACME, Globex, or Initech."
-            )
-
-        lines: list[str] = []
-        if customer:
-            title = customer.get("name", "Customer")
-            lines.append(f"# {title} Executive Briefing")
-            lines.append("")
-            lines.append("## FACT")
-            if "segment" in customer:
-                lines.append(f"- Segment: {customer['segment']}")
-            if "annualRevenue" in customer:
-                lines.append(f"- Annual revenue: ${customer['annualRevenue']:,.0f}")
-            if "revenueTrendPct" in customer:
-                lines.append(f"- Revenue trend: {customer['revenueTrendPct']:+.1f}%")
-            if "accountOwner" in customer:
-                lines.append(f"- Account owner: {customer['accountOwner']}")
-
-        if sales:
-            if "annualSpend2025" in sales:
-                lines.append(f"- 2025 spend: ${sales['annualSpend2025']:,.0f}")
-            if "annualSpend2024" in sales:
-                lines.append(f"- 2024 spend: ${sales['annualSpend2024']:,.0f}")
-
-        if tickets:
-            lines.append(f"- Open support tickets: {tickets.get('openCount', 0)}")
-            for ticket in tickets.get("tickets", [])[:3]:
-                if ticket.get("status") == "open":
-                    lines.append(
-                        f"  - {ticket['title']} ({ticket['priority']} priority, "
-                        f"{ticket['openedDaysAgo']} days open)"
-                    )
-
-        if contracts and contracts.get("contracts"):
-            primary = contracts["contracts"][0]
-            lines.append(
-                f"- Primary contract renewal: {primary['renewalDate']} "
-                f"({primary['renewalDaysRemaining']} days remaining)"
-            )
-
-        if sources:
-            lines.append("")
-            lines.append("## Knowledge sources")
-            for source in sources:
-                lines.append(f"- {source.title} ({source.source})")
-
-        if recommendations:
-            lines.append("")
-            lines.append("## RECOMMENDATION")
-            for item in recommendations:
-                lines.append(f"- **{item.title}**: {item.detail}")
-
-        if not customer and sources:
-            lines = ["# Policy answer", "", "## FACT"]
-            for source in sources:
-                snippet = source.snippet or ""
-                lines.append(f"- {source.title}: {snippet[:180]}")
-
-        return "\n".join(lines)
+        agent = SemanticKernelSalesAgent(self.mcp, self.retriever, self.system_prompt)
+        try:
+            return await agent.handle(conversation_id, message)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("Semantic Kernel agent failed")
+            raise HTTPException(
+                status_code=502,
+                detail=f"Agent execution failed: {exc}",
+            ) from exc

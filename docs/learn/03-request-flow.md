@@ -24,7 +24,7 @@ sequenceDiagram
     MCP->>CRM: GET /customers/ACME-001
     CRM-->>MCP: JSON customer profile
     MCP-->>SK: tool result
-    SK->>SK: synthesize answer (mock LLM Phase 1)
+    SK->>SK: synthesize answer (Azure OpenAI)
     SK-->>API: answer + toolsUsed
     API-->>Vue: JSON response
     Vue-->>User: render message + tools badge
@@ -85,9 +85,9 @@ sequenceDiagram
     SK->>OAI: context from MCP + RAG
     OAI-->>SK: executive briefing
 
-    SK-->>API: answer, sources, toolsUsed, facts/recommendations
+    SK-->>API: answer, sources, toolsUsed, debug (provenance)
     API-->>Vue: JSON
-    Vue-->>User: briefing + sources panel
+    Vue-->>User: briefing + provenance panel (MCP / RAG / LLM)
 ```
 
 ## API contract — POST /api/v1/chat
@@ -106,6 +106,7 @@ flowchart LR
         S4[toolsUsed: array]
         S5[facts: optional array]
         S6[recommendations: optional array]
+        S7[debug: MCP/RAG/LLM provenance]
     end
 
     Request --> API[FastAPI handler]
@@ -133,7 +134,26 @@ flowchart LR
   "sources": [
     { "title": "ACME Contract", "source": "contract-acme-2026.pdf" }
   ],
-  "toolsUsed": ["get_customer", "get_customer_sales", "get_customer_tickets"]
+  "toolsUsed": ["get_customer", "get_customer_sales", "get_customer_tickets"],
+  "debug": {
+    "pipeline": ["mcp:get_customer", "mcp:get_customer_sales", "llm:synthesis"],
+    "mcpCalls": [
+      {
+        "tool": "get_customer",
+        "source": "mcp",
+        "arguments": { "customer_id": "ACME-001" },
+        "resultPreview": "{\"name\":\"ACME Corporation\"}",
+        "durationMs": 12.3
+      }
+    ],
+    "ragCalls": [],
+    "llm": {
+      "model": "gpt-4o-mini",
+      "promptTokens": 1200,
+      "completionTokens": 450,
+      "note": "FACT bullets grounded in MCP/RAG; RECOMMENDATION is LLM-generated."
+    }
+  }
 }
 ```
 

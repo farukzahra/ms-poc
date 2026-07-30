@@ -38,7 +38,7 @@ flowchart LR
 - [x] `POST /api/v1/chat` returns CRM data via MCP
 - [x] Basic Vue chat
 - [x] pytest: agent → MCP → mock API
-- [x] Mock LLM or deterministic response (no Azure yet)
+- [x] Azure OpenAI agent (Semantic Kernel) with MCP tool calling
 
 **Recorded decisions:**
 

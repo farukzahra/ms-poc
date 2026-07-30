@@ -200,10 +200,11 @@ docker compose up --build
 | Validation | URL / command |
 |------------|---------------|
 | API | `GET http://localhost:8000/health` |
-| Frontend | http://localhost:5173 — title "Enterprise AI Sales Intelligence" |
-| MCP | per configured transport |
+| Frontend (Docker Compose) | http://localhost:**5200** — title "Enterprise AI Sales Intelligence" |
+| Frontend (`npm run dev` only) | http://localhost:5173 |
+| MCP | http://localhost:8001 |
 
-Report effective URLs to the user.
+Always verify with `docker ps` and a live HTTP check before reporting URLs to the user. Compose maps host **5200** → container 5173.
 
 ## Documentation (mandatory maintenance)
 

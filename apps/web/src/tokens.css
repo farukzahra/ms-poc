@@ -1,0 +1,49 @@
+/* Hallmark · genre: atmospheric · theme: Lumen · Night Foundry · source: faruk.dev.br design system
+ * macrostructure: Workbench (app split-pane) · nav: floating pill · enrichment: none
+ */
+
+:root {
+  --scale: 1;
+  --page-pad-x: 20px;
+  --page-pad-y: 24px;
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+
+  --text-xs: calc(10px * var(--scale));
+  --text-sm: calc(11px * var(--scale));
+  --text-md: calc(13px * var(--scale));
+  --text-lg: calc(16px * var(--scale));
+  --text-xl: calc(20px * var(--scale));
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-short: 180ms;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+}
+
+@media (min-width: 821px) {
+  :root {
+    --page-pad-x: 36px;
+    --page-pad-y: 32px;
+  }
+}
+
+body.lumen-theme-active {
+  --lumen-paper: oklch(13% 0.014 265);
+  --lumen-panel: oklch(17% 0.016 265);
+  --lumen-ink: oklch(96% 0.006 262);
+  --lumen-ink-2: oklch(72% 0.008 262);
+  --lumen-accent: oklch(76% 0.17 50);
+  --lumen-rule: oklch(96% 0.006 262 / 0.12);
+  --lumen-rule-blueprint: oklch(96% 0.006 262 / 0.04);
+  --lumen-error: oklch(68% 0.16 18);
+  --lumen-font-display: "Instrument Serif", Georgia, serif;
+  --lumen-font-body: "Geist", "Open Sans", system-ui, sans-serif;
+  --lumen-font-label: "JetBrains Mono", ui-monospace, monospace;
+}

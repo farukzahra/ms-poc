@@ -4,6 +4,29 @@ export interface SourceItem {
   snippet?: string;
 }
 
+export interface ToolCallDebug {
+  tool: string;
+  source: "mcp" | "rag";
+  arguments: Record<string, string>;
+  resultPreview: string;
+  durationMs?: number;
+}
+
+export interface LlmDebugInfo {
+  model: string;
+  role: string;
+  promptTokens: number;
+  completionTokens: number;
+  note: string;
+}
+
+export interface ResponseDebug {
+  pipeline: string[];
+  mcpCalls: ToolCallDebug[];
+  ragCalls: ToolCallDebug[];
+  llm?: LlmDebugInfo;
+}
+
 export interface ChatResponse {
   conversationId: string;
   answer: string;
@@ -11,6 +34,7 @@ export interface ChatResponse {
   toolsUsed: string[];
   facts?: Array<{ label: string; value: string }>;
   recommendations?: Array<{ title: string; detail: string }>;
+  debug?: ResponseDebug;
 }
 
 const API_URL = (

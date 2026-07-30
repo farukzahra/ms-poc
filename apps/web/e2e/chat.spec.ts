@@ -21,6 +21,31 @@ test("user can send ACME briefing prompt", async ({ page }) => {
           { label: "Customer", value: "ACME Corporation (ACME-001)" },
         ],
         recommendations: [],
+        debug: {
+          pipeline: [
+            "mcp:get_customer",
+            "mcp:get_customer_sales",
+            "mcp:get_customer_tickets",
+            "llm:synthesis",
+          ],
+          mcpCalls: [
+            {
+              tool: "get_customer",
+              source: "mcp",
+              arguments: { customer_id: "ACME-001" },
+              resultPreview: '{"name":"ACME Corporation","segment":"Enterprise"}',
+              durationMs: 11.2,
+            },
+          ],
+          ragCalls: [],
+          llm: {
+            model: "gpt-4o-mini",
+            role: "synthesis",
+            promptTokens: 900,
+            completionTokens: 320,
+            note: "FACT bullets grounded in MCP/RAG tool results; RECOMMENDATION section is LLM-generated guidance.",
+          },
+        },
       }),
     });
   });
@@ -29,7 +54,9 @@ test("user can send ACME briefing prompt", async ({ page }) => {
   await page.getByTestId("chat-input").fill("Prepare me for my meeting with ACME");
   await page.getByTestId("chat-send").click();
   await expect(page.getByTestId("messages")).toContainText("ACME Executive Briefing");
-  await expect(page.getByText("get_customer", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("provenance")).toBeVisible();
+  await expect(page.getByTestId("provenance").getByText("MCP", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("provenance").getByText("get_customer", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Facts" })).toBeVisible();
   await expect(page.getByText("Open tickets")).toBeVisible();
 });
