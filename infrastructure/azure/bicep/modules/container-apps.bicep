@@ -1,6 +1,7 @@
 param location string
 param environmentName string
 param appInsightsConnectionString string
+param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 
 resource managedEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: '${environmentName}-cae'
@@ -17,6 +18,7 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
       ingress: {
         external: true
         targetPort: 8000
+        transport: 'auto'
       }
       secrets: [
         {
@@ -29,7 +31,7 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           name: 'api'
-          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+          image: containerImage
           env: [
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -38,6 +40,30 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'API_PORT'
               value: '8000'
+            }
+            {
+              name: 'MCP_SERVER_URL'
+              value: 'http://mcp-server:8001'
+            }
+          ]
+          probes: [
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/health'
+                port: 8000
+              }
+              periodSeconds: 30
+              failureThreshold: 3
+            }
+            {
+              type: 'Readiness'
+              httpGet: {
+                path: '/ready'
+                port: 8000
+              }
+              periodSeconds: 10
+              failureThreshold: 3
             }
           ]
           resources: {
@@ -55,3 +81,4 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
 }
 
 output apiFqdn string = apiApp.properties.configuration.ingress.fqdn
+output managedEnvironmentId string = managedEnv.id

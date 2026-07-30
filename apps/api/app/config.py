@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     azure_ai_api_key: str = ""
     azure_chat_deployment: str = ""
     azure_embedding_deployment: str = ""
+    azure_openai_api_version: str = "2024-10-21"
 
     azure_search_endpoint: str = ""
     azure_search_index: str = "enterprise-knowledge"
@@ -21,6 +22,9 @@ class Settings(BaseSettings):
 
     azure_storage_account: str = ""
     azure_storage_connection_string: str = ""
+    azure_storage_container: str = "documents"
+
+    azure_key_vault_url: str = ""
 
     applicationinsights_connection_string: str = ""
 
@@ -63,6 +67,11 @@ class Settings(BaseSettings):
             and self.azure_ad_client_id
             and self.azure_ad_client_secret
         )
+
+    @property
+    def key_vault_configured(self) -> bool:
+        return bool(self.azure_key_vault_url)
+
 
     @property
     def insights_configured(self) -> bool:

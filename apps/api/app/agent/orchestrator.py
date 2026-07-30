@@ -6,10 +6,14 @@ from pathlib import Path
 
 from demo_data.store import DEMO_STORE
 
+from app.agent.plugins.mcp_plugin import McpPlugin
+from app.agent.plugins.rag_plugin import RagPlugin
+from app.agent.response_builder import recommendations_from_context
 from app.config import settings
 from app.mcp.client import McpClient
 from app.models.chat import ChatResponse, FactItem, RecommendationItem, SourceItem
 from app.rag.retriever import KnowledgeRetriever
+from app.telemetry.tracer import AgentTracer
 
 logger = logging.getLogger(__name__)
 
@@ -65,16 +69,20 @@ class SalesAgentOrchestrator:
     async def handle(self, conversation_id: str, message: str) -> ChatResponse:
         if settings.azure_openai_configured:
             try:
-                from app.agent.azure_agent import AzureSalesAgent
+                from app.agent.sk_agent import SemanticKernelSalesAgent
 
-                agent = AzureSalesAgent(self.mcp, self.retriever, self.system_prompt)
+                agent = SemanticKernelSalesAgent(self.mcp, self.retriever, self.system_prompt)
                 return await agent.handle(conversation_id, message)
             except Exception as exc:  # noqa: BLE001
-                logger.warning("Azure agent failed, using local orchestrator: %s", exc)
+                logger.warning("Semantic Kernel agent failed, using local orchestrator: %s", exc)
 
         return await self._handle_local(conversation_id, message)
 
     async def _handle_local(self, conversation_id: str, message: str) -> ChatResponse:
+        with AgentTracer(conversation_id=conversation_id):
+            return await self._handle_local_inner(conversation_id, message)
+
+    async def _handle_local_inner(self, conversation_id: str, message: str) -> ChatResponse:
         customer_id = _resolve_customer_id(message)
         tools_used: list[str] = []
         facts: list[FactItem] = []
@@ -129,27 +137,32 @@ class SalesAgentOrchestrator:
             sources = [SourceItem(**item) for item in rag_hits]
 
         if customer:
-            facts.append(FactItem(label="Customer", value=f"{customer['name']} ({customer['id']})"))
-            facts.append(
-                FactItem(
-                    label="Annual revenue",
-                    value=f"${customer['annualRevenue']:,.0f}",
+            name = customer.get("name", customer.get("id", "Unknown"))
+            cid = customer.get("id", "")
+            facts.append(FactItem(label="Customer", value=f"{name} ({cid})"))
+            if "annualRevenue" in customer:
+                facts.append(
+                    FactItem(
+                        label="Annual revenue",
+                        value=f"${customer['annualRevenue']:,.0f}",
+                    )
                 )
-            )
-            facts.append(
-                FactItem(
-                    label="Revenue trend",
-                    value=f"{customer['revenueTrendPct']:+.1f}%",
+            if "revenueTrendPct" in customer:
+                facts.append(
+                    FactItem(
+                        label="Revenue trend",
+                        value=f"{customer['revenueTrendPct']:+.1f}%",
+                    )
                 )
-            )
 
-        if sales:
+        if sales and "annualSpend2025" in sales:
             facts.append(
                 FactItem(
                     label="2025 annual spend",
                     value=f"${sales['annualSpend2025']:,.0f}",
                 )
             )
+        if sales and "annualSpend2024" in sales:
             facts.append(
                 FactItem(
                     label="2024 annual spend",
@@ -171,6 +184,16 @@ class SalesAgentOrchestrator:
                 )
             )
 
+        recommendations = recommendations_from_context(
+            {
+                "get_customer": customer,
+                "get_customer_sales": sales,
+                "get_customer_tickets": tickets,
+                "get_customer_contracts": contracts,
+            },
+            sources,
+        )
+
         answer = self._compose_answer(
             customer=customer,
             sales=sales,
@@ -181,30 +204,6 @@ class SalesAgentOrchestrator:
             recommendations=recommendations,
             message=message,
         )
-
-        if customer and tickets and tickets.get("openCount", 0) >= 2:
-            recommendations.append(
-                RecommendationItem(
-                    title="Resolve support escalations before renewal",
-                    detail="Multiple open tickets increase renewal risk; align support and account team.",
-                )
-            )
-
-        if customer and customer.get("revenueTrendPct", 0) < -5:
-            recommendations.append(
-                RecommendationItem(
-                    title="Investigate adoption decline",
-                    detail="Review product usage and schedule an executive check-in focused on value realization.",
-                )
-            )
-
-        if rag_hits and any("renewal" in hit.get("source", "") for hit in rag_hits):
-            recommendations.append(
-                RecommendationItem(
-                    title="Start renewal planning early",
-                    detail="Policy recommends opening renewal discussions at least 90 days before expiration.",
-                )
-            )
 
         return ChatResponse(
             conversationId=conversation_id,
@@ -235,17 +234,24 @@ class SalesAgentOrchestrator:
 
         lines: list[str] = []
         if customer:
-            lines.append(f"# {customer['name']} Executive Briefing")
+            title = customer.get("name", "Customer")
+            lines.append(f"# {title} Executive Briefing")
             lines.append("")
             lines.append("## FACT")
-            lines.append(f"- Segment: {customer['segment']}")
-            lines.append(f"- Annual revenue: ${customer['annualRevenue']:,.0f}")
-            lines.append(f"- Revenue trend: {customer['revenueTrendPct']:+.1f}%")
-            lines.append(f"- Account owner: {customer['accountOwner']}")
+            if "segment" in customer:
+                lines.append(f"- Segment: {customer['segment']}")
+            if "annualRevenue" in customer:
+                lines.append(f"- Annual revenue: ${customer['annualRevenue']:,.0f}")
+            if "revenueTrendPct" in customer:
+                lines.append(f"- Revenue trend: {customer['revenueTrendPct']:+.1f}%")
+            if "accountOwner" in customer:
+                lines.append(f"- Account owner: {customer['accountOwner']}")
 
         if sales:
-            lines.append(f"- 2025 spend: ${sales['annualSpend2025']:,.0f}")
-            lines.append(f"- 2024 spend: ${sales['annualSpend2024']:,.0f}")
+            if "annualSpend2025" in sales:
+                lines.append(f"- 2025 spend: ${sales['annualSpend2025']:,.0f}")
+            if "annualSpend2024" in sales:
+                lines.append(f"- 2024 spend: ${sales['annualSpend2024']:,.0f}")
 
         if tickets:
             lines.append(f"- Open support tickets: {tickets.get('openCount', 0)}")

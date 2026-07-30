@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routes.chat import router as chat_router
 from app.routes.health import router as health_router
-from app.storage.blob import sync_documents_from_blob
+from app.storage.blob import sync_and_ingest
 from app.telemetry.insights import configure_application_insights
 
 logger = logging.getLogger(__name__)
@@ -36,9 +36,11 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup() -> None:
         try:
-            sync_documents_from_blob()
+            synced, ingested = sync_and_ingest()
+            if synced or ingested:
+                logger.info("Blob pipeline: synced=%s ingested=%s", synced, ingested)
         except Exception as exc:  # noqa: BLE001
-            logger.warning("Blob sync skipped: %s", exc)
+            logger.warning("Blob sync/ingest skipped: %s", exc)
 
     return app
 

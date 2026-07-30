@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 from app.config import settings
+from app.rag.embeddings import embed_text
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,22 @@ class AzureSearchRetriever:
         if customer_id:
             filter_expr = f"customerId eq '{customer_id}'"
 
+        vector_queries = None
+        embedding = embed_text(query)
+        if embedding:
+            from azure.search.documents.models import VectorizedQuery
+
+            vector_queries = [
+                VectorizedQuery(
+                    vector=embedding,
+                    k_nearest_neighbors=top_k,
+                    fields="contentVector",
+                )
+            ]
+
         results = self.client.search(
             search_text=query,
+            vector_queries=vector_queries,
             filter=filter_expr,
             top=top_k,
             select=["title", "source", "content", "customerId"],

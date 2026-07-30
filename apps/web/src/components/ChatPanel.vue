@@ -89,6 +89,14 @@ function isRecommendationLine(line: string): boolean {
           </li>
         </ul>
       </section>
+      <section v-if="latest.facts?.length">
+        <h2>Facts</h2>
+        <ul>
+          <li v-for="fact in latest.facts" :key="fact.label">
+            <strong>{{ fact.label }}</strong>: {{ fact.value }}
+          </li>
+        </ul>
+      </section>
       <section v-if="latest.recommendations?.length">
         <h2>Recommendations</h2>
         <ul>

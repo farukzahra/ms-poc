@@ -5,18 +5,19 @@ Implementation roadmap — **never all at once**. Each phase leaves the system r
 ## Timeline visual
 
 ```mermaid
-gantt
-    title POC Implementation Phases
-    dateFormat YYYY-MM-DD
-    section Local
-    Phase 1 Vertical slice     :p1, 2026-07-30, 14d
-    section Azure AI
-    Phase 2 OpenAI             :p2, after p1, 7d
-    Phase 3 AI Search RAG      :p3, after p2, 10d
-    Phase 4 Blob Storage       :p4, after p3, 5d
-    section Deploy
-    Phase 5 Container Apps     :p5, after p4, 7d
-    Phase 6 Entra Insights KV  :p6, after p5, 7d
+flowchart LR
+    P1[Phase 1<br/>Vertical slice] --> P2[Phase 2<br/>Azure OpenAI]
+    P2 --> P3[Phase 3<br/>AI Search RAG]
+    P3 --> P4[Phase 4<br/>Blob Storage]
+    P4 --> P5[Phase 5<br/>Container Apps]
+    P5 --> P6[Phase 6<br/>Entra + Insights + KV]
+
+    classDef local fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
+    classDef azure fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
+    classDef deploy fill:#FFF3E0,stroke:#E65100,color:#BF360C
+    class P1 local
+    class P2,P3,P4 azure
+    class P5,P6 deploy
 ```
 
 ## Phase 1 — Local vertical slice ✅ target first
@@ -72,7 +73,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Data[data/] --> Ingest --> Search[(AI Search)]
+    Data["data/"] --> Ingest --> Search[(AI Search)]
     SK --> RAG --> Search
 
     classDef p3 fill:#E1BEE7,stroke:#6A1B9A,color:#4A148C
@@ -81,22 +82,32 @@ flowchart LR
 
 **Deliverables:**
 
-- [ ] `python -m app.rag.ingest`
-- [ ] `KnowledgeRetriever.search(query, customer_id?)`
-- [ ] Citations in API response + Vue sources panel
-- [ ] Scenarios 3 and 1 partial
+- [x] `python -m app.rag.ingest`
+- [x] `KnowledgeRetriever.search(query, customer_id?)`
+- [x] Citations in API response + Vue sources panel
+- [x] Hybrid vector + keyword search (Azure)
+- [x] Scenarios 3 and 1 partial
 
-## Phase 4 — Blob Storage
+## Phase 4 — Blob Storage ✅
 
 **Change:** Blob = document source of truth (local `data/` for dev mirror)
 
-## Phase 5 — Azure Container Apps
+- [x] Upload script + sync on startup + re-ingest to Search
+
+## Phase 5 — Azure Container Apps ✅
 
 **Deploy:** FastAPI container, Bicep modules, `/health` for probes
 
-## Phase 6 — Entra ID + Key Vault + Application Insights
+- [x] Bicep: monitoring, storage, search, key vault, ACR, container apps with probes
+- [x] `scripts/deploy-azure.sh`
 
-**Add:** JWT auth, secret refs, full agent execution telemetry
+## Phase 6 — Entra ID + Key Vault + Application Insights ✅
+
+**Add:** JWT auth (JWKS), secret refs, agent execution telemetry
+
+- [x] Entra JWT validation with JWKS
+- [x] Key Vault Bicep module
+- [x] AgentTracer spans + token logging
 
 ## Definition of Done — checklist
 
@@ -107,7 +118,7 @@ See [PLAN.md §51](../PLAN.md#51-definition-of-done) — 22 items.
 ```mermaid
 flowchart TD
     R1[Keep app runnable after each PR] --> R2[No placeholder claiming Azure works]
-    R2 --> R3[Update docs/learn when flow changes]
+    R2 --> R3["Update docs/learn when flow changes"]
     R3 --> R4[Add ADR on irreversible decisions]
     R4 --> R5[Run tests before done]
 

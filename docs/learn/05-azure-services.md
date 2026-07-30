@@ -83,15 +83,15 @@ AZURE_EMBEDDING_DEPLOYMENT=
 
 **Index `enterprise-knowledge`:**
 
-| Field | Type | Uso |
+| Field | Type | Use |
 |-------|------|-----|
 | `id` | string | PK |
-| `content` | string | Texto do chunk |
+| `content` | string | Chunk text |
 | `title` | string | Document title |
 | `document_type` | string | policy, contract, product |
 | `customer_id` | string | Filtro ACME-001 |
 | `department` | string | Filtro org |
-| `source` | string | Nome arquivo origem |
+| `source` | string | Source file name |
 | `created_at` | datetime | Sort order |
 | `content_vector` | vector | Dim = embedding model |
 
@@ -111,7 +111,7 @@ flowchart TD
 
 ## Azure Blob Storage
 
-Estrutura de pastas:
+Folder structure:
 
 ```text
 documents/

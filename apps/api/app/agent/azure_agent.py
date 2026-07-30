@@ -1,3 +1,5 @@
+"""Legacy OpenAI SDK agent — superseded by app.agent.sk_agent.SemanticKernelSalesAgent."""
+
 from __future__ import annotations
 
 import json

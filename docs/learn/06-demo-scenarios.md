@@ -52,7 +52,7 @@ flowchart TB
     class MCP,RAG,Brief path
 ```
 
-**Output esperado (estrutura):**
+**Expected output (structure):**
 
 - Customer summary
 - Revenue / renewal
@@ -67,7 +67,7 @@ flowchart TB
 
 **Expected:** MCP → `get_customer_sales` — **no RAG**
 
-**Talking point entrevista:** *"Revenue is transactional — it lives in the sales system, not in PDFs."*
+**Interview talking point:** *"Revenue is transactional — it lives in the sales system, not in PDFs."*
 
 ## Scenario 3 — Knowledge only
 

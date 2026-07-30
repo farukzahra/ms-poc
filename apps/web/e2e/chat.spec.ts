@@ -16,6 +16,10 @@ test("user can send ACME briefing prompt", async ({ page }) => {
         answer: "# ACME Executive Briefing\n\n## FACT\n- Open support tickets: 3",
         sources: [{ title: "Renewal policy", source: "policies/renewal-policy.md" }],
         toolsUsed: ["get_customer", "get_customer_sales", "get_customer_tickets"],
+        facts: [
+          { label: "Open tickets", value: "3" },
+          { label: "Customer", value: "ACME Corporation (ACME-001)" },
+        ],
         recommendations: [],
       }),
     });
@@ -26,4 +30,6 @@ test("user can send ACME briefing prompt", async ({ page }) => {
   await page.getByTestId("chat-send").click();
   await expect(page.getByTestId("messages")).toContainText("ACME Executive Briefing");
   await expect(page.getByText("get_customer", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Facts" })).toBeVisible();
+  await expect(page.getByText("Open tickets")).toBeVisible();
 });

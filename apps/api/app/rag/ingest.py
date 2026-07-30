@@ -7,27 +7,10 @@ import logging
 from pathlib import Path
 
 from app.config import settings
+from app.rag.embeddings import embed_text
 from app.rag.local_store import load_documents
 
 logger = logging.getLogger(__name__)
-
-
-def _embedding(text: str) -> list[float]:
-    if not settings.azure_openai_configured or not settings.azure_embedding_deployment:
-        return []
-
-    from openai import AzureOpenAI
-
-    client = AzureOpenAI(
-        azure_endpoint=settings.azure_ai_endpoint,
-        api_key=settings.azure_ai_api_key,
-        api_version="2024-10-21",
-    )
-    response = client.embeddings.create(
-        model=settings.azure_embedding_deployment,
-        input=text,
-    )
-    return response.data[0].embedding
 
 
 def ingest_to_azure(data_dir: str | Path | None = None) -> int:
@@ -47,6 +30,7 @@ def ingest_to_azure(data_dir: str | Path | None = None) -> int:
     documents = []
     for chunk in chunks:
         doc_id = hashlib.sha256(chunk.id.encode()).hexdigest()[:32]
+        vector = embed_text(chunk.text) or None
         documents.append(
             {
                 "id": doc_id,
@@ -54,7 +38,7 @@ def ingest_to_azure(data_dir: str | Path | None = None) -> int:
                 "source": chunk.source,
                 "content": chunk.text,
                 "customerId": chunk.customer_id or "",
-                "contentVector": _embedding(chunk.text) or None,
+                "contentVector": vector,
             }
         )
 

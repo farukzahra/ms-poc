@@ -67,7 +67,7 @@ flowchart TB
     class Mocks,MCPLayer local
 ```
 
-## Monorepo — estrutura de pastas
+## Monorepo — folder structure
 
 ```mermaid
 flowchart TD

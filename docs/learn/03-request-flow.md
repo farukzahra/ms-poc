@@ -32,7 +32,7 @@ sequenceDiagram
 
 ## Full flow — Phase 3+ (MCP + RAG + Azure OpenAI)
 
-Briefing executivo: *"Prepare me for my meeting with ACME."*
+Executive briefing: *"Prepare me for my meeting with ACME."*
 
 ```mermaid
 sequenceDiagram
@@ -115,7 +115,7 @@ flowchart LR
     class Request,Response io
 ```
 
-**Exemplo request:**
+**Example request:**
 
 ```json
 {
@@ -124,7 +124,7 @@ flowchart LR
 }
 ```
 
-**Exemplo response (simplificado):**
+**Example response (simplified):**
 
 ```json
 {
@@ -179,7 +179,7 @@ flowchart TD
     class Index fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
 ```
 
-## Telemetria por request (Phase 6)
+## Telemetry per request (Phase 6)
 
 Each execution produces a correlated trace:
 

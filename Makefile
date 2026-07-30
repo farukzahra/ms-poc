@@ -1,4 +1,4 @@
-.PHONY: install sync up down test test-e2e ingest health
+.PHONY: install sync up down test test-e2e ingest health upload-blob deploy-azure
 
 install:
 	uv sync --directory apps/api
@@ -30,3 +30,9 @@ test-e2e:
 
 ingest:
 	cd apps/api && uv run python -m app.rag.ingest
+
+upload-blob:
+	uv run python scripts/upload_documents_to_blob.py
+
+deploy-azure:
+	sh scripts/deploy-azure.sh
