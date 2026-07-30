@@ -8,7 +8,7 @@
       "title": "Interface Lumen e painel de proveniência no chat",
       "summary": "O chat usa o tema escuro Night Foundry (faruk.dev.br), componentes Vue separados e sidebar com facts, sources e debug MCP/RAG/LLM. O agente expõe proveniência na resposta e o orchestrator delega ao Semantic Kernel.",
       "type": "feat",
-      "commit": null
+      "commit": "bb7e7fe"
     },
     {
       "version": "0.1.0",
