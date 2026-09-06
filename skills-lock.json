@@ -32,7 +32,7 @@
       "computedHash": "79fec75eb8cb46ec4d5e119a08d5366dfe2f1b56d876b2ea5633fa80f8aa1f7c"
     },
     "caveman-commit": {
-      "source": "juliusbrussee/caveman",
+      "source": "farukzahra/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/caveman-commit/SKILL.md",
       "computedHash": "f028652defd5fdeddcce2994083cb1a7b201ee827bba8e2495546ee159fca3de"
@@ -144,6 +144,12 @@
       "sourceType": "github",
       "skillPath": "plugins/llm-application-dev/skills/rag-implementation/SKILL.md",
       "computedHash": "305766e72769b5531ec77e3653f9546d04e4be7d6e170580f1fb32ba6b843743"
+    },
+    "semantic-version": {
+      "source": "farukzahra/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/semantic-version/SKILL.md",
+      "computedHash": "0d736dc574837851509a5c8438bd5441f251632b0101af45c437e2d0cc6a97f5"
     },
     "systematic-debugging": {
       "source": "obra/superpowers",

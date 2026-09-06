@@ -1,0 +1,9 @@
+﻿{
+    "github":  {
+                   "owner":  "farukzahra",
+                   "repo":  "ms-poc"
+               },
+    "productionUrl":  "https://mspoc.faruk.dev.br",
+    "verifyUrl":  "https://mspoc.faruk.dev.br/",
+    "expectInBody":  "Sales"
+}

@@ -164,8 +164,8 @@ When the decision is the user's and cannot be inferred from the PLAN:
 Before asking the user for **any manual action** (browser click, install, DNS, create token):
 
 1. **Try to execute yourself** — PAT, SSH, API, `gh`, deploy scripts, documented credentials.
-2. **Check known credential locations** — `C:\repo\financeiro\planos\vps-secrets\`, `secrets.local.md`, `.env.example`.
-3. **Azure** — install Azure CLI if missing; run `az login` (or service principal from `vps-secrets/`); use [`scripts/azure-discover.ps1`](scripts/azure-discover.ps1) and [`scripts/azure-fill-env.ps1`](scripts/azure-fill-env.ps1). See [`docs/azure-access.md`](docs/azure-access.md).
+2. **Check known credential locations** — `C:\repo\secrets\`, `secrets.local.md`, `.env.example`.
+3. **Azure** — install Azure CLI if missing; run `az login` (or service principal from `C:\repo\secrets\`); use [`scripts/azure-discover.ps1`](scripts/azure-discover.ps1) and [`scripts/azure-fill-env.ps1`](scripts/azure-fill-env.ps1). See [`docs/azure-access.md`](docs/azure-access.md).
 4. **Privileges before asking** — tell the user which **RBAC role/scope** unlocks full agent automation; only ask for manual steps when impossible even with those privileges (first login, OAuth/2FA, billing quota, Entra admin consent).
 5. Escalate only when automation is impossible — state exactly what to create (token type, scope, secret name).
 
@@ -235,3 +235,18 @@ Files: `architecture.md`, `security.md`, `rag.md`, `mcp.md`, `observability.md`,
 ## Definition of Done
 
 Full checklist: [`docs/PLAN.md` §51](docs/PLAN.md#51-definition-of-done).
+
+## Superpowers workflow
+
+| Phase | Skill | Output |
+|-------|-------|--------|
+| Design | `brainstorming` | Approved design â†’ `docs/superpowers/specs/YYYY-MM-DD-*-design.md` |
+| Plan | `writing-plans` | `docs/superpowers/plans/YYYY-MM-DD-*.md` |
+| Build | stack skills + `tdd` | Code + tests |
+| Verify | `verification-before-completion` | Evidence before "done" |
+| Debug | `systematic-debugging` | Root cause before fix |
+| Ship | `/commit-push` | `semantic-version` + `caveman-commit` + push + CI |
+
+**Gates:** no feature code before approved spec; no "done" without verification; version bump only on `/commit-push`.
+
+Invoke `/init` to (re)bootstrap skills and folders.
