@@ -1,0 +1,30 @@
+---
+description: Start dev server and report test URL when finishing a task
+applyTo: "**"
+---
+
+# Dev server at end of task
+
+Whenever you finish an implementation, fix, or UI/API validation task:
+
+1. **Detect the stack** — `AGENTS.md`, `README.md`, `package.json`, `docs/stack.md`.
+2. **Check if the server is already running** — terminals and documented ports.
+3. **Start whatever is missing without asking** — backend, frontend, or full-stack app per project.
+4. **Validate** — health check, page title, or equivalent documented endpoint (`docker ps`, then HTTP).
+5. **Tell the user** — **effective host URLs only** (never assume Vite default 5173 when Compose is used).
+
+## ms-poc (when Phase 1 exists)
+
+```bash
+docker compose up --build
+```
+
+| Service | Effective URL (Docker Compose) |
+|---------|------------------------------|
+| Frontend | http://localhost:**5200** — title "Enterprise AI Sales Intelligence" |
+| API | http://localhost:8000 — `GET /health`, `GET /ready` |
+| MCP | http://localhost:8001 |
+
+Compose maps `5200:5173` (5173 is container-only). `npm run dev` without Docker may use 5173 — always confirm with `docker ps` or a live request before sharing links.
+
+Do not end the response without validated test URLs when the task changed runnable code.
